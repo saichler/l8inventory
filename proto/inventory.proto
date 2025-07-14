@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package types;
+
+option java_multiple_files = true;
+option java_outer_classname = "Types";
+option java_package = "com.inventory.types";
+option go_package = "./types";
+
+message NetworkBox {
+  string id = 1;
+  EquipmentInfo info = 2;
+  map<string, Physical> physicals = 3;
+  map<string, Logical> logicals = 4;
+}
+
+message EquipmentInfo {
+  string vendor = 2;
+  string series = 3;
+  string family = 4;
+  string software = 5;
+  string hardware = 6;
+  string version = 7;
+  string sys_name = 8;
+  string sys_oid = 9;
+}
+
+message Physical {
+  string id = 1;
+  repeated Chassis chassis = 2;
+  repeated Port ports = 3;
+}
+
+message Logical {
+  string id = 1;
+  repeated Interface intefaces = 2;
+}
+
+message Chassis {
+  string id = 1;
+  string serial = 2;
+  repeated Slot slots = 3;
+  repeated Port ports = 4;
+}
+
+message Slot {
+  string id = 1;
+  Module module = 2;
+  repeated Port ports = 3;
+}
+
+message Module {
+  string id = 1;
+  string serial = 2;
+  repeated Port ports = 3;
+}
+
+message Port {
+  string id = 1;
+  repeated Interface interfaces = 2;
+}
+
+message Interface {
+  string id = 1;
+  string status = 2;
+}
