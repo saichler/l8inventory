@@ -51,6 +51,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 				resp := this.nic.SingleRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea),
 					ifs.POST, elem)
 				if resp != nil && resp.Error() != nil {
+					panic(resp.Error())
 					vnic.Resources().Logger().Error(resp.Error().Error())
 				} else {
 					vnic.Resources().Logger().Info("Post Finished to ", this.forwardService.ServiceName, " area ",
@@ -75,7 +76,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 					this.forwardService.ServiceArea)
 				elem := this.inventoryCenter.ElementByElement(elements.Element())
 				resp := this.nic.SingleRequest(this.forwardService.ServiceName,
-					byte(this.forwardService.ServiceArea), ifs.POST, elem)
+					byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
 				if resp != nil && resp.Error() != nil {
 					vnic.Resources().Logger().Error(resp.Error().Error())
 				} else {
