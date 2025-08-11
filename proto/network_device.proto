@@ -1,0 +1,488 @@
+syntax = "proto3";
+
+package types;
+
+option java_multiple_files = true;
+option java_outer_classname = "NetworkDevice";
+option java_package = "com.inventory.types";
+option go_package = "./types";
+
+// Abstract tree node representing any network device component
+message TreeNode {
+  string id = 1;
+  string name = 2;
+  string type = 3;
+  TreeNodeStatus status = 4;
+  map<string, string> attributes = 5;
+  repeated TreeNode children = 6;
+  TreeNode parent = 7;
+  int32 depth = 8;
+  string path = 9;
+}
+
+// Status of a tree node
+enum TreeNodeStatus {
+  UNKNOWN = 0;
+  ACTIVE = 1;
+  INACTIVE = 2;
+  DEGRADED = 3;
+  FAILED = 4;
+  MAINTENANCE = 5;
+}
+
+// Root network device containing all layers
+message NetworkDevice {
+  string id = 1;
+  string name = 2;
+  EquipmentInfo equipment_info = 3;
+  PhysicalLayer physical_layer = 4;
+  LogicalLayer logical_layer = 5;
+  TechnologyLayer technology_layer = 6;
+  TreeNode device_tree = 7;
+  repeated Relationship relationships = 8;
+}
+
+// Location information
+message Location {
+  string name = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+// Equipment identification and metadata
+message EquipmentInfo {
+  string vendor = 1;
+  string model = 2;
+  string series = 3;
+  string family = 4;
+  string software_version = 5;
+  string hardware_version = 6;
+  string firmware_version = 7;
+  string system_name = 8;
+  string system_oid = 9;
+  string serial_number = 10;
+  string mac_address = 11;
+  repeated string ip_addresses = 12;
+  Location location = 13;
+  int64 uptime = 14;
+}
+
+// Physical layer representation
+message PhysicalLayer {
+  TreeNode root = 1;
+  repeated Chassis chassis_list = 2;
+  repeated Card card_list = 3;
+  repeated Port port_list = 4;
+  repeated Transceiver transceiver_list = 5;
+}
+
+// Physical chassis/enclosure
+message Chassis {
+  string id = 1;
+  string name = 2;
+  string serial_number = 3;
+  string part_number = 4;
+  ChassisType chassis_type = 5;
+  repeated Slot slots = 6;
+  repeated PowerSupply power_supplies = 7;
+  repeated Fan fans = 8;
+  repeated Sensor sensors = 9;
+  TreeNodeStatus status = 10;
+}
+
+enum ChassisType {
+  MAIN_CHASSIS = 0;
+  LINE_CARD_CHASSIS = 1;
+  FABRIC_CHASSIS = 2;
+  CONTROL_CHASSIS = 3;
+  SWITCH_CHASSIS = 4;
+  ROUTER_CHASSIS = 5;
+}
+
+// Physical slot for cards/modules
+message Slot {
+  string id = 1;
+  string name = 2;
+  int32 slot_number = 3;
+  SlotType slot_type = 4;
+  Card installed_card = 5;
+  TreeNodeStatus status = 6;
+}
+
+enum SlotType {
+  LINE_CARD = 0;
+  SUPERVISOR = 1;
+  FABRIC = 2;
+  POWER_SUPPLY = 3;
+  FAN_TRAY = 4;
+  EXPANSION = 5;
+}
+
+// Physical card/module
+message Card {
+  string id = 1;
+  string name = 2;
+  string serial_number = 3;
+  string part_number = 4;
+  CardType card_type = 5;
+  repeated Port ports = 6;
+  repeated SubCard sub_cards = 7;
+  TreeNodeStatus status = 8;
+}
+
+enum CardType {
+  LINE_CARD_TYPE = 0;
+  SUPERVISOR_CARD = 1;
+  FABRIC_CARD = 2;
+  SERVICE_CARD = 3;
+  INTERFACE_CARD = 4;
+}
+
+// Sub-card or daughter card
+message SubCard {
+  string id = 1;
+  string name = 2;
+  string serial_number = 3;
+  string part_number = 4;
+  repeated Port ports = 5;
+  TreeNodeStatus status = 6;
+}
+
+// Physical port
+message Port {
+  string id = 1;
+  string name = 2;
+  int32 port_number = 3;
+  PortType port_type = 4;
+  PortSpeed speed = 5;
+  PortDuplex duplex = 6;
+  Transceiver transceiver = 7;
+  repeated LogicalInterface logical_interfaces = 8;
+  TreeNodeStatus status = 9;
+  PortStatistics statistics = 10;
+}
+
+enum PortType {
+  ETHERNET = 0;
+  FIBER = 1;
+  SERIAL = 2;
+  ATM = 3;
+  SONET = 4;
+  POS = 5;
+  WIRELESS = 6;
+  VIRTUAL = 7;
+}
+
+enum PortSpeed {
+  SPEED_10M = 0;
+  SPEED_100M = 1;
+  SPEED_1G = 2;
+  SPEED_10G = 3;
+  SPEED_25G = 4;
+  SPEED_40G = 5;
+  SPEED_50G = 6;
+  SPEED_100G = 7;
+  SPEED_200G = 8;
+  SPEED_400G = 9;
+}
+
+enum PortDuplex {
+  HALF_DUPLEX = 0;
+  FULL_DUPLEX = 1;
+  AUTO = 2;
+}
+
+// Physical transceiver/optic
+message Transceiver {
+  string id = 1;
+  string name = 2;
+  string serial_number = 3;
+  string part_number = 4;
+  TransceiverType transceiver_type = 5;
+  string connector_type = 6;
+  int32 wavelength = 7;
+  double power_tx = 8;
+  double power_rx = 9;
+  TreeNodeStatus status = 10;
+}
+
+enum TransceiverType {
+  SFP = 0;
+  SFP_PLUS = 1;
+  QSFP = 2;
+  QSFP_PLUS = 3;
+  QSFP28 = 4;
+  XFP = 5;
+  CFP = 6;
+  GBIC = 7;
+}
+
+// Power supply unit
+message PowerSupply {
+  string id = 1;
+  string name = 2;
+  string serial_number = 3;
+  double capacity_watts = 4;
+  double current_draw = 5;
+  TreeNodeStatus status = 6;
+}
+
+// Cooling fan
+message Fan {
+  string id = 1;
+  string name = 2;
+  int32 speed_rpm = 3;
+  TreeNodeStatus status = 4;
+}
+
+// Environmental sensor
+message Sensor {
+  string id = 1;
+  string name = 2;
+  SensorType sensor_type = 3;
+  double current_value = 4;
+  double threshold_warning = 5;
+  double threshold_critical = 6;
+  string units = 7;
+  TreeNodeStatus status = 8;
+}
+
+enum SensorType {
+  TEMPERATURE = 0;
+  VOLTAGE = 1;
+  CURRENT = 2;
+  POWER = 3;
+  HUMIDITY = 4;
+}
+
+// Logical layer representation
+message LogicalLayer {
+  TreeNode root = 1;
+  repeated LogicalInterface interface_list = 2;
+  repeated VLAN vlan_list = 3;
+  repeated VRF vrf_list = 4;
+  repeated Bridge bridge_list = 5;
+  repeated Tunnel tunnel_list = 6;
+}
+
+// Logical interface
+message LogicalInterface {
+  string id = 1;
+  string name = 2;
+  InterfaceType interface_type = 3;
+  string description = 4;
+  repeated string ip_addresses = 5;
+  string mac_address = 6;
+  int32 mtu = 7;
+  repeated VLAN vlans = 8;
+  VRF vrf = 9;
+  TreeNodeStatus status = 10;
+  InterfaceStatistics statistics = 11;
+}
+
+enum InterfaceType {
+  PHYSICAL_INTERFACE = 0;
+  SUBINTERFACE = 1;
+  VLAN_INTERFACE = 2;
+  LOOPBACK = 3;
+  TUNNEL_INTERFACE = 4;
+  BRIDGE_INTERFACE = 5;
+  LAG_INTERFACE = 6;
+  VIRTUAL_INTERFACE = 7;
+}
+
+// Virtual LAN
+message VLAN {
+  string id = 1;
+  string name = 2;
+  int32 vlan_id = 3;
+  string description = 4;
+  repeated LogicalInterface member_interfaces = 5;
+  TreeNodeStatus status = 6;
+}
+
+// Virtual Routing and Forwarding
+message VRF {
+  string id = 1;
+  string name = 2;
+  string route_distinguisher = 3;
+  repeated string route_targets = 4;
+  repeated LogicalInterface member_interfaces = 5;
+  TreeNodeStatus status = 6;
+}
+
+// Bridge domain
+message Bridge {
+  string id = 1;
+  string name = 2;
+  int32 bridge_id = 3;
+  repeated LogicalInterface member_interfaces = 4;
+  TreeNodeStatus status = 5;
+}
+
+// Tunnel interface
+message Tunnel {
+  string id = 1;
+  string name = 2;
+  TunnelType tunnel_type = 3;
+  string source_address = 4;
+  string destination_address = 5;
+  TreeNodeStatus status = 6;
+}
+
+enum TunnelType {
+  GRE = 0;
+  IPSEC = 1;
+  L2TP = 2;
+  VXLAN = 3;
+  MPLS = 4;
+}
+
+// Technology layer representation
+message TechnologyLayer {
+  TreeNode root = 1;
+  repeated RoutingProtocol routing_protocols = 2;
+  repeated SwitchingProtocol switching_protocols = 3;
+  repeated SecurityProtocol security_protocols = 4;
+  repeated QoSProtocol qos_protocols = 5;
+  repeated ManagementProtocol management_protocols = 6;
+}
+
+// Routing protocol
+message RoutingProtocol {
+  string id = 1;
+  string name = 2;
+  RoutingProtocolType protocol_type = 3;
+  repeated string networks = 4;
+  map<string, string> configuration = 5;
+  TreeNodeStatus status = 6;
+}
+
+enum RoutingProtocolType {
+  STATIC = 0;
+  RIP = 1;
+  OSPF = 2;
+  EIGRP = 3;
+  BGP = 4;
+  ISIS = 5;
+}
+
+// Switching protocol
+message SwitchingProtocol {
+  string id = 1;
+  string name = 2;
+  SwitchingProtocolType protocol_type = 3;
+  map<string, string> configuration = 4;
+  TreeNodeStatus status = 5;
+}
+
+enum SwitchingProtocolType {
+  STP = 0;
+  RSTP = 1;
+  MSTP = 2;
+  PVST = 3;
+  LACP = 4;
+}
+
+// Security protocol
+message SecurityProtocol {
+  string id = 1;
+  string name = 2;
+  SecurityProtocolType protocol_type = 3;
+  map<string, string> configuration = 4;
+  TreeNodeStatus status = 5;
+}
+
+enum SecurityProtocolType {
+  ACL = 0;
+  FIREWALL = 1;
+  VPN = 2;
+  NAT = 3;
+  AAA = 4;
+}
+
+// Quality of Service protocol
+message QoSProtocol {
+  string id = 1;
+  string name = 2;
+  QoSProtocolType protocol_type = 3;
+  map<string, string> configuration = 4;
+  TreeNodeStatus status = 5;
+}
+
+enum QoSProtocolType {
+  DIFFSERV = 0;
+  INTSERV = 1;
+  TRAFFIC_SHAPING = 2;
+  POLICER = 3;
+  QUEUE_MANAGEMENT = 4;
+}
+
+// Management protocol
+message ManagementProtocol {
+  string id = 1;
+  string name = 2;
+  ManagementProtocolType protocol_type = 3;
+  map<string, string> configuration = 4;
+  TreeNodeStatus status = 5;
+}
+
+enum ManagementProtocolType {
+  SNMP = 0;
+  SSH = 1;
+  TELNET = 2;
+  HTTP = 3;
+  HTTPS = 4;
+  NETCONF = 5;
+  RESTCONF = 6;
+}
+
+// Relationship between components
+message Relationship {
+  string id = 1;
+  string source_id = 2;
+  string target_id = 3;
+  RelationshipType relationship_type = 4;
+  string description = 5;
+  map<string, string> attributes = 6;
+}
+
+enum RelationshipType {
+  CONTAINS = 0;
+  CONNECTED_TO = 1;
+  DEPENDS_ON = 2;
+  CONFIGURED_ON = 3;
+  ROUTES_THROUGH = 4;
+  BRIDGES_TO = 5;
+  TUNNELS_TO = 6;
+}
+
+// Statistics for ports
+message PortStatistics {
+  int64 bytes_in = 1;
+  int64 bytes_out = 2;
+  int64 packets_in = 3;
+  int64 packets_out = 4;
+  int64 errors_in = 5;
+  int64 errors_out = 6;
+  int64 drops_in = 7;
+  int64 drops_out = 8;
+}
+
+// Statistics for interfaces
+message InterfaceStatistics {
+  int64 bytes_in = 1;
+  int64 bytes_out = 2;
+  int64 packets_in = 3;
+  int64 packets_out = 4;
+  int64 unicast_packets_in = 5;
+  int64 unicast_packets_out = 6;
+  int64 multicast_packets_in = 7;
+  int64 multicast_packets_out = 8;
+  int64 broadcast_packets_in = 9;
+  int64 broadcast_packets_out = 10;
+  int64 errors_in = 11;
+  int64 errors_out = 12;
+  int64 drops_in = 13;
+  int64 drops_out = 14;
+}

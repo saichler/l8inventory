@@ -1,0 +1,1245 @@
+syntax = "proto3";
+
+package types;
+
+option java_multiple_files = true;
+option java_outer_classname = "Kubernetes";
+option java_package = "com.inventory.types";
+option go_package = "./types";
+
+// Common Kubernetes metadata
+message ObjectMeta {
+  string name = 1;
+  string namespace = 2;
+  string uid = 3;
+  string resource_version = 4;
+  int64 generation = 5;
+  string creation_timestamp = 6;
+  string deletion_timestamp = 7;
+  int64 deletion_grace_period_seconds = 8;
+  map<string, string> labels = 9;
+  map<string, string> annotations = 10;
+  repeated OwnerReference owner_references = 11;
+  repeated string finalizers = 12;
+}
+
+message OwnerReference {
+  string api_version = 1;
+  string kind = 2;
+  string name = 3;
+  string uid = 4;
+  bool controller = 5;
+  bool block_owner_deletion = 6;
+}
+
+// Common status
+message ObjectStatus {
+  repeated Condition conditions = 1;
+  string phase = 2;
+  string message = 3;
+  string reason = 4;
+  int32 observed_generation = 5;
+}
+
+message Condition {
+  string type = 1;
+  string status = 2;
+  string last_transition_time = 3;
+  string last_update_time = 4;
+  string reason = 5;
+  string message = 6;
+}
+
+// Core Kubernetes resources
+
+// Namespace
+message Namespace {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  NamespaceSpec spec = 4;
+  NamespaceStatus status = 5;
+}
+
+message NamespaceSpec {
+  repeated string finalizers = 1;
+}
+
+message NamespaceStatus {
+  string phase = 1;
+  repeated Condition conditions = 2;
+}
+
+// Node
+message Node {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  NodeSpec spec = 4;
+  NodeStatus status = 5;
+}
+
+message NodeSpec {
+  string pod_cidr = 1;
+  repeated string pod_cidrs = 2;
+  string provider_id = 3;
+  bool unschedulable = 4;
+  repeated Taint taints = 5;
+}
+
+message NodeStatus {
+  string capacity_cpu = 1;
+  string capacity_memory = 2;
+  string capacity_storage = 3;
+  string capacity_ephemeral_storage = 4;
+  string allocatable_cpu = 5;
+  string allocatable_memory = 6;
+  string allocatable_storage = 7;
+  string allocatable_ephemeral_storage = 8;
+  string phase = 9;
+  repeated Condition conditions = 10;
+  repeated NodeAddress addresses = 11;
+  repeated ContainerImage images = 12;
+  NodeSystemInfo node_info = 13;
+}
+
+message NodeAddress {
+  string type = 1;
+  string address = 2;
+}
+
+message ContainerImage {
+  repeated string names = 1;
+  int64 size_bytes = 2;
+}
+
+message NodeSystemInfo {
+  string machine_id = 1;
+  string system_uuid = 2;
+  string boot_id = 3;
+  string kernel_version = 4;
+  string os_image = 5;
+  string container_runtime_version = 6;
+  string kubelet_version = 7;
+  string kube_proxy_version = 8;
+  string operating_system = 9;
+  string architecture = 10;
+}
+
+message Taint {
+  string key = 1;
+  string value = 2;
+  string effect = 3;
+  string time_added = 4;
+}
+
+// Workload resources
+
+// Pod
+message Pod {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  PodSpec spec = 4;
+  PodStatus status = 5;
+}
+
+message PodSpec {
+  repeated Container containers = 1;
+  repeated Container init_containers = 2;
+  string restart_policy = 3;
+  int64 termination_grace_period_seconds = 4;
+  int64 active_deadline_seconds = 5;
+  string dns_policy = 6;
+  map<string, string> node_selector = 7;
+  string service_account_name = 8;
+  string node_name = 9;
+  bool host_network = 10;
+  bool host_pid = 11;
+  bool host_ipc = 12;
+  SecurityContext security_context = 13;
+  repeated Volume volumes = 14;
+  repeated Toleration tolerations = 15;
+  Affinity affinity = 16;
+  string scheduler_name = 17;
+}
+
+message Container {
+  string name = 1;
+  string image = 2;
+  string image_pull_policy = 3;
+  repeated string command = 4;
+  repeated string args = 5;
+  repeated ContainerPort ports = 6;
+  repeated EnvVar env = 7;
+  ResourceRequirements resources = 8;
+  repeated VolumeMount volume_mounts = 9;
+  Probe liveness_probe = 10;
+  Probe readiness_probe = 11;
+  Probe startup_probe = 12;
+  SecurityContext security_context = 13;
+  string working_dir = 14;
+  bool stdin = 15;
+  bool stdin_once = 16;
+  bool tty = 17;
+}
+
+message ContainerPort {
+  string name = 1;
+  int32 host_port = 2;
+  int32 container_port = 3;
+  string protocol = 4;
+  string host_ip = 5;
+}
+
+message EnvVar {
+  string name = 1;
+  string value = 2;
+  EnvVarSource value_from = 3;
+}
+
+message EnvVarSource {
+  FieldRef field_ref = 1;
+  ResourceFieldRef resource_field_ref = 2;
+  ConfigMapKeyRef config_map_key_ref = 3;
+  SecretKeyRef secret_key_ref = 4;
+}
+
+message FieldRef {
+  string api_version = 1;
+  string field_path = 2;
+}
+
+message ResourceFieldRef {
+  string container_name = 1;
+  string resource = 2;
+  string divisor = 3;
+}
+
+message ConfigMapKeyRef {
+  string name = 1;
+  string key = 2;
+  bool optional = 3;
+}
+
+message SecretKeyRef {
+  string name = 1;
+  string key = 2;
+  bool optional = 3;
+}
+
+message ResourceRequirements {
+  map<string, string> limits = 1;
+  map<string, string> requests = 2;
+}
+
+message VolumeMount {
+  string name = 1;
+  bool read_only = 2;
+  string mount_path = 3;
+  string sub_path = 4;
+  string mount_propagation = 5;
+  string sub_path_expr = 6;
+}
+
+message Probe {
+  HTTPGetAction http_get = 1;
+  TCPSocketAction tcp_socket = 2;
+  ExecAction exec = 3;
+  int32 initial_delay_seconds = 4;
+  int32 timeout_seconds = 5;
+  int32 period_seconds = 6;
+  int32 success_threshold = 7;
+  int32 failure_threshold = 8;
+}
+
+message HTTPGetAction {
+  string path = 1;
+  string port = 2;
+  string host = 3;
+  string scheme = 4;
+  repeated HTTPHeader http_headers = 5;
+}
+
+message HTTPHeader {
+  string name = 1;
+  string value = 2;
+}
+
+message TCPSocketAction {
+  string port = 1;
+  string host = 2;
+}
+
+message ExecAction {
+  repeated string command = 1;
+}
+
+message SecurityContext {
+  bool run_as_non_root = 1;
+  int64 run_as_user = 2;
+  int64 run_as_group = 3;
+  int64 fs_group = 4;
+  string fs_group_change_policy = 5;
+  SELinuxOptions se_linux_options = 6;
+  WindowsOptions windows_options = 7;
+  string seccomp_profile_type = 8;
+  string seccomp_profile_localhost_profile = 9;
+}
+
+message SELinuxOptions {
+  string user = 1;
+  string role = 2;
+  string type = 3;
+  string level = 4;
+}
+
+message WindowsOptions {
+  string gmsa_credential_spec_name = 1;
+  string gmsa_credential_spec = 2;
+  string run_as_user_name = 3;
+}
+
+message Volume {
+  string name = 1;
+  VolumeSource volume_source = 2;
+}
+
+message VolumeSource {
+  HostPathVolumeSource host_path = 1;
+  EmptyDirVolumeSource empty_dir = 2;
+  SecretVolumeSource secret = 3;
+  ConfigMapVolumeSource config_map = 4;
+  PersistentVolumeClaimVolumeSource persistent_volume_claim = 5;
+  ProjectedVolumeSource projected = 6;
+}
+
+message HostPathVolumeSource {
+  string path = 1;
+  string type = 2;
+}
+
+message EmptyDirVolumeSource {
+  string medium = 1;
+  string size_limit = 2;
+}
+
+message SecretVolumeSource {
+  string secret_name = 1;
+  repeated KeyToPath items = 2;
+  int32 default_mode = 3;
+  bool optional = 4;
+}
+
+message ConfigMapVolumeSource {
+  string name = 1;
+  repeated KeyToPath items = 2;
+  int32 default_mode = 3;
+  bool optional = 4;
+}
+
+message KeyToPath {
+  string key = 1;
+  string path = 2;
+  int32 mode = 3;
+}
+
+message PersistentVolumeClaimVolumeSource {
+  string claim_name = 1;
+  bool read_only = 2;
+}
+
+message ProjectedVolumeSource {
+  repeated VolumeProjection sources = 1;
+  int32 default_mode = 2;
+}
+
+message VolumeProjection {
+  SecretProjection secret = 1;
+  ConfigMapProjection config_map = 2;
+  DownwardAPIProjection downward_api = 3;
+  ServiceAccountTokenProjection service_account_token = 4;
+}
+
+message SecretProjection {
+  string name = 1;
+  repeated KeyToPath items = 2;
+  bool optional = 3;
+}
+
+message ConfigMapProjection {
+  string name = 1;
+  repeated KeyToPath items = 2;
+  bool optional = 3;
+}
+
+message DownwardAPIProjection {
+  repeated DownwardAPIVolumeFile items = 1;
+}
+
+message DownwardAPIVolumeFile {
+  string path = 1;
+  FieldRef field_ref = 2;
+  ResourceFieldRef resource_field_ref = 3;
+  int32 mode = 4;
+}
+
+message ServiceAccountTokenProjection {
+  string audience = 1;
+  int64 expiration_seconds = 2;
+  string path = 3;
+}
+
+message Toleration {
+  string key = 1;
+  string operator = 2;
+  string value = 3;
+  string effect = 4;
+  int64 toleration_seconds = 5;
+}
+
+message Affinity {
+  NodeAffinity node_affinity = 1;
+  PodAffinity pod_affinity = 2;
+  PodAntiAffinity pod_anti_affinity = 3;
+}
+
+message NodeAffinity {
+  NodeSelector required_during_scheduling_ignored_during_execution = 1;
+  repeated PreferredSchedulingTerm preferred_during_scheduling_ignored_during_execution = 2;
+}
+
+message NodeSelector {
+  repeated NodeSelectorTerm node_selector_terms = 1;
+}
+
+message NodeSelectorTerm {
+  repeated NodeSelectorRequirement match_expressions = 1;
+  repeated NodeSelectorRequirement match_fields = 2;
+}
+
+message NodeSelectorRequirement {
+  string key = 1;
+  string operator = 2;
+  repeated string values = 3;
+}
+
+message PreferredSchedulingTerm {
+  int32 weight = 1;
+  NodeSelectorTerm preference = 2;
+}
+
+message PodAffinity {
+  repeated PodAffinityTerm required_during_scheduling_ignored_during_execution = 1;
+  repeated WeightedPodAffinityTerm preferred_during_scheduling_ignored_during_execution = 2;
+}
+
+message PodAntiAffinity {
+  repeated PodAffinityTerm required_during_scheduling_ignored_during_execution = 1;
+  repeated WeightedPodAffinityTerm preferred_during_scheduling_ignored_during_execution = 2;
+}
+
+message PodAffinityTerm {
+  LabelSelector label_selector = 1;
+  repeated string namespaces = 2;
+  string topology_key = 3;
+  LabelSelector namespace_selector = 4;
+}
+
+message WeightedPodAffinityTerm {
+  int32 weight = 1;
+  PodAffinityTerm pod_affinity_term = 2;
+}
+
+message LabelSelector {
+  map<string, string> match_labels = 1;
+  repeated LabelSelectorRequirement match_expressions = 2;
+}
+
+message LabelSelectorRequirement {
+  string key = 1;
+  string operator = 2;
+  repeated string values = 3;
+}
+
+message PodStatus {
+  string phase = 1;
+  repeated Condition conditions = 2;
+  string message = 3;
+  string reason = 4;
+  string nominated_node_name = 5;
+  string host_ip = 6;
+  string pod_ip = 7;
+  repeated string pod_ips = 8;
+  string start_time = 9;
+  repeated ContainerStatus init_container_statuses = 10;
+  repeated ContainerStatus container_statuses = 11;
+  string qos_class = 12;
+  repeated ContainerStatus ephemeral_container_statuses = 13;
+}
+
+message ContainerStatus {
+  string name = 1;
+  ContainerState state = 2;
+  ContainerState last_termination_state = 3;
+  bool ready = 4;
+  int32 restart_count = 5;
+  string image = 6;
+  string image_id = 7;
+  string container_id = 8;
+  bool started = 9;
+}
+
+message ContainerState {
+  ContainerStateWaiting waiting = 1;
+  ContainerStateRunning running = 2;
+  ContainerStateTerminated terminated = 3;
+}
+
+message ContainerStateWaiting {
+  string reason = 1;
+  string message = 2;
+}
+
+message ContainerStateRunning {
+  string started_at = 1;
+}
+
+message ContainerStateTerminated {
+  int32 exit_code = 1;
+  int32 signal = 2;
+  string reason = 3;
+  string message = 4;
+  string started_at = 5;
+  string finished_at = 6;
+  string container_id = 7;
+}
+
+// Deployment
+message Deployment {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  DeploymentSpec spec = 4;
+  DeploymentStatus status = 5;
+}
+
+message DeploymentSpec {
+  int32 replicas = 1;
+  LabelSelector selector = 2;
+  PodTemplateSpec template = 3;
+  DeploymentStrategy strategy = 4;
+  int32 min_ready_seconds = 5;
+  int32 revision_history_limit = 6;
+  bool paused = 7;
+  int32 progress_deadline_seconds = 8;
+}
+
+message PodTemplateSpec {
+  ObjectMeta metadata = 1;
+  PodSpec spec = 2;
+}
+
+message DeploymentStrategy {
+  string type = 1;
+  RollingUpdateDeployment rolling_update = 2;
+}
+
+message RollingUpdateDeployment {
+  string max_unavailable = 1;
+  string max_surge = 2;
+}
+
+message DeploymentStatus {
+  int64 observed_generation = 1;
+  int32 replicas = 2;
+  int32 updated_replicas = 3;
+  int32 ready_replicas = 4;
+  int32 available_replicas = 5;
+  int32 unavailable_replicas = 6;
+  repeated Condition conditions = 7;
+  int32 collision_count = 8;
+}
+
+// ReplicaSet
+message ReplicaSet {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  ReplicaSetSpec spec = 4;
+  ReplicaSetStatus status = 5;
+}
+
+message ReplicaSetSpec {
+  int32 replicas = 1;
+  int32 min_ready_seconds = 2;
+  LabelSelector selector = 3;
+  PodTemplateSpec template = 4;
+}
+
+message ReplicaSetStatus {
+  int32 replicas = 1;
+  int32 fully_labeled_replicas = 2;
+  int32 ready_replicas = 3;
+  int32 available_replicas = 4;
+  int64 observed_generation = 5;
+  repeated Condition conditions = 6;
+}
+
+// StatefulSet
+message StatefulSet {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  StatefulSetSpec spec = 4;
+  StatefulSetStatus status = 5;
+}
+
+message StatefulSetSpec {
+  int32 replicas = 1;
+  LabelSelector selector = 2;
+  PodTemplateSpec template = 3;
+  repeated PersistentVolumeClaim volume_claim_templates = 4;
+  string service_name = 5;
+  string pod_management_policy = 6;
+  StatefulSetUpdateStrategy update_strategy = 7;
+  int32 revision_history_limit = 8;
+}
+
+message StatefulSetUpdateStrategy {
+  string type = 1;
+  RollingUpdateStatefulSetStrategy rolling_update = 2;
+}
+
+message RollingUpdateStatefulSetStrategy {
+  string partition = 1;
+}
+
+message StatefulSetStatus {
+  int64 observed_generation = 1;
+  int32 replicas = 2;
+  int32 ready_replicas = 3;
+  int32 current_replicas = 4;
+  int32 updated_replicas = 5;
+  string current_revision = 6;
+  string update_revision = 7;
+  int32 collision_count = 8;
+  repeated Condition conditions = 9;
+}
+
+// DaemonSet
+message DaemonSet {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  DaemonSetSpec spec = 4;
+  DaemonSetStatus status = 5;
+}
+
+message DaemonSetSpec {
+  LabelSelector selector = 1;
+  PodTemplateSpec template = 2;
+  DaemonSetUpdateStrategy update_strategy = 3;
+  int32 min_ready_seconds = 4;
+  int32 revision_history_limit = 5;
+}
+
+message DaemonSetUpdateStrategy {
+  string type = 1;
+  RollingUpdateDaemonSet rolling_update = 2;
+}
+
+message RollingUpdateDaemonSet {
+  string max_unavailable = 1;
+}
+
+message DaemonSetStatus {
+  int32 current_number_scheduled = 1;
+  int32 number_misscheduled = 2;
+  int32 desired_number_scheduled = 3;
+  int32 number_ready = 4;
+  int64 observed_generation = 5;
+  int32 updated_number_scheduled = 6;
+  int32 number_available = 7;
+  int32 number_unavailable = 8;
+  int32 collision_count = 9;
+  repeated Condition conditions = 10;
+}
+
+// Job
+message Job {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  JobSpec spec = 4;
+  JobStatus status = 5;
+}
+
+message JobSpec {
+  int32 parallelism = 1;
+  int32 completions = 2;
+  int64 active_deadline_seconds = 3;
+  int32 backoff_limit = 4;
+  LabelSelector selector = 5;
+  bool manual_selector = 6;
+  PodTemplateSpec template = 7;
+  int32 ttl_seconds_after_finished = 8;
+  string completion_mode = 9;
+  bool suspend = 10;
+}
+
+message JobStatus {
+  repeated Condition conditions = 1;
+  string start_time = 2;
+  string completion_time = 3;
+  int32 active = 4;
+  int32 succeeded = 5;
+  int32 failed = 6;
+  int32 completed_indexes = 7;
+  UncountedTerminatedPods uncounted_terminated_pods = 8;
+}
+
+message UncountedTerminatedPods {
+  repeated string succeeded = 1;
+  repeated string failed = 2;
+}
+
+// CronJob
+message CronJob {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  CronJobSpec spec = 4;
+  CronJobStatus status = 5;
+}
+
+message CronJobSpec {
+  string schedule = 1;
+  string time_zone = 2;
+  int64 starting_deadline_seconds = 3;
+  string concurrency_policy = 4;
+  bool suspend = 5;
+  JobTemplateSpec job_template = 6;
+  int32 successful_jobs_history_limit = 7;
+  int32 failed_jobs_history_limit = 8;
+}
+
+message JobTemplateSpec {
+  ObjectMeta metadata = 1;
+  JobSpec spec = 2;
+}
+
+message CronJobStatus {
+  repeated ObjectReference active = 1;
+  string last_schedule_time = 2;
+  string last_successful_time = 3;
+}
+
+message ObjectReference {
+  string kind = 1;
+  string namespace = 2;
+  string name = 3;
+  string uid = 4;
+  string api_version = 5;
+  string resource_version = 6;
+  string field_path = 7;
+}
+
+// Service and Networking
+
+// Service
+message Service {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  ServiceSpec spec = 4;
+  ServiceStatus status = 5;
+}
+
+message ServiceSpec {
+  repeated ServicePort ports = 1;
+  map<string, string> selector = 2;
+  string cluster_ip = 3;
+  string type = 4;
+  repeated string external_ips = 5;
+  string session_affinity = 6;
+  string load_balancer_ip = 7;
+  repeated string load_balancer_source_ranges = 8;
+  string external_name = 9;
+  string external_traffic_policy = 10;
+  int32 health_check_node_port = 11;
+  bool publish_not_ready_addresses = 12;
+  SessionAffinityConfig session_affinity_config = 13;
+  string ip_family_policy = 14;
+  repeated string ip_families = 15;
+}
+
+message ServicePort {
+  string name = 1;
+  string protocol = 2;
+  int32 port = 3;
+  string target_port = 4;
+  int32 node_port = 5;
+  string app_protocol = 6;
+}
+
+message SessionAffinityConfig {
+  ClientIPConfig client_ip = 1;
+}
+
+message ClientIPConfig {
+  int32 timeout_seconds = 1;
+}
+
+message ServiceStatus {
+  LoadBalancerStatus load_balancer = 1;
+  repeated Condition conditions = 2;
+}
+
+message LoadBalancerStatus {
+  repeated LoadBalancerIngress ingress = 1;
+}
+
+message LoadBalancerIngress {
+  string ip = 1;
+  string hostname = 2;
+  repeated PortStatus ports = 3;
+}
+
+message PortStatus {
+  int32 port = 1;
+  string protocol = 2;
+  string error = 3;
+}
+
+// Endpoints
+message Endpoints {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  repeated EndpointSubset subsets = 4;
+}
+
+message EndpointSubset {
+  repeated EndpointAddress addresses = 1;
+  repeated EndpointAddress not_ready_addresses = 2;
+  repeated EndpointPort ports = 3;
+}
+
+message EndpointAddress {
+  string ip = 1;
+  string hostname = 2;
+  string node_name = 3;
+  ObjectReference target_ref = 4;
+}
+
+message EndpointPort {
+  string name = 1;
+  int32 port = 2;
+  string protocol = 3;
+  string app_protocol = 4;
+}
+
+// Ingress
+message Ingress {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  IngressSpec spec = 4;
+  IngressStatus status = 5;
+}
+
+message IngressSpec {
+  IngressBackend default_backend = 1;
+  repeated IngressTLS tls = 2;
+  repeated IngressRule rules = 3;
+  string ingress_class_name = 4;
+}
+
+message IngressBackend {
+  IngressServiceBackend service = 1;
+  TypedLocalObjectReference resource = 2;
+}
+
+message IngressServiceBackend {
+  string name = 1;
+  ServiceBackendPort port = 2;
+}
+
+message ServiceBackendPort {
+  string name = 1;
+  int32 number = 2;
+}
+
+message TypedLocalObjectReference {
+  string api_group = 1;
+  string kind = 2;
+  string name = 3;
+}
+
+message IngressTLS {
+  repeated string hosts = 1;
+  string secret_name = 2;
+}
+
+message IngressRule {
+  string host = 1;
+  HTTPIngressRuleValue http = 2;
+}
+
+message HTTPIngressRuleValue {
+  repeated HTTPIngressPath paths = 1;
+}
+
+message HTTPIngressPath {
+  string path = 1;
+  string path_type = 2;
+  IngressBackend backend = 3;
+}
+
+message IngressStatus {
+  LoadBalancerStatus load_balancer = 1;
+}
+
+// NetworkPolicy
+message NetworkPolicy {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  NetworkPolicySpec spec = 4;
+}
+
+message NetworkPolicySpec {
+  LabelSelector pod_selector = 1;
+  repeated NetworkPolicyIngressRule ingress = 2;
+  repeated NetworkPolicyEgressRule egress = 3;
+  repeated string policy_types = 4;
+}
+
+message NetworkPolicyIngressRule {
+  repeated NetworkPolicyPort ports = 1;
+  repeated NetworkPolicyPeer from = 2;
+}
+
+message NetworkPolicyEgressRule {
+  repeated NetworkPolicyPort ports = 1;
+  repeated NetworkPolicyPeer to = 2;
+}
+
+message NetworkPolicyPort {
+  string protocol = 1;
+  string port = 2;
+  string end_port = 3;
+}
+
+message NetworkPolicyPeer {
+  LabelSelector pod_selector = 1;
+  LabelSelector namespace_selector = 2;
+  IPBlock ip_block = 3;
+}
+
+message IPBlock {
+  string cidr = 1;
+  repeated string except = 2;
+}
+
+// Storage and Configuration
+
+// PersistentVolume
+message PersistentVolume {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  PersistentVolumeSpec spec = 4;
+  PersistentVolumeStatus status = 5;
+}
+
+message PersistentVolumeSpec {
+  string capacity = 1;
+  PersistentVolumeSource persistent_volume_source = 2;
+  repeated string access_modes = 3;
+  ObjectReference claim_ref = 4;
+  string persistent_volume_reclaim_policy = 5;
+  string storage_class_name = 6;
+  repeated string mount_options = 7;
+  string volume_mode = 8;
+  VolumeNodeAffinity node_affinity = 9;
+}
+
+message PersistentVolumeSource {
+  GCEPersistentDiskVolumeSource gce_persistent_disk = 1;
+  AWSElasticBlockStoreVolumeSource aws_elastic_block_store = 2;
+  HostPathVolumeSource host_path = 3;
+  NFSVolumeSource nfs = 4;
+  ISCSIVolumeSource iscsi = 5;
+  CSIVolumeSource csi = 6;
+}
+
+message GCEPersistentDiskVolumeSource {
+  string pd_name = 1;
+  string fs_type = 2;
+  int32 partition = 3;
+  bool read_only = 4;
+}
+
+message AWSElasticBlockStoreVolumeSource {
+  string volume_id = 1;
+  string fs_type = 2;
+  int32 partition = 3;
+  bool read_only = 4;
+}
+
+message NFSVolumeSource {
+  string server = 1;
+  string path = 2;
+  bool read_only = 3;
+}
+
+message ISCSIVolumeSource {
+  string target_portal = 1;
+  string iqn = 2;
+  int32 lun = 3;
+  string iscsi_interface = 4;
+  string fs_type = 5;
+  bool read_only = 6;
+  repeated string portals = 7;
+  bool chap_auth_discovery = 8;
+  bool chap_auth_session = 9;
+  LocalObjectReference secret_ref = 10;
+  int32 initiator_name = 11;
+}
+
+message LocalObjectReference {
+  string name = 1;
+}
+
+message CSIVolumeSource {
+  string driver = 1;
+  string volume_handle = 2;
+  bool read_only = 3;
+  string fs_type = 4;
+  map<string, string> volume_attributes = 5;
+  SecretReference controller_publish_secret_ref = 6;
+  SecretReference node_stage_secret_ref = 7;
+  SecretReference node_publish_secret_ref = 8;
+  SecretReference controller_expand_secret_ref = 9;
+}
+
+message SecretReference {
+  string name = 1;
+  string namespace = 2;
+}
+
+message VolumeNodeAffinity {
+  NodeSelector required = 1;
+}
+
+message PersistentVolumeStatus {
+  string phase = 1;
+  string message = 2;
+  string reason = 3;
+}
+
+// PersistentVolumeClaim
+message PersistentVolumeClaim {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  PersistentVolumeClaimSpec spec = 4;
+  PersistentVolumeClaimStatus status = 5;
+}
+
+message PersistentVolumeClaimSpec {
+  repeated string access_modes = 1;
+  LabelSelector selector = 2;
+  ResourceRequirements resources = 3;
+  string volume_name = 4;
+  string storage_class_name = 5;
+  string volume_mode = 6;
+  TypedLocalObjectReference data_source = 7;
+  TypedLocalObjectReference data_source_ref = 8;
+}
+
+message PersistentVolumeClaimStatus {
+  string phase = 1;
+  repeated string access_modes = 2;
+  map<string, string> capacity = 3;
+  repeated Condition conditions = 4;
+  string allocated_resources = 5;
+  string resize_status = 6;
+}
+
+// StorageClass
+message StorageClass {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  string provisioner = 4;
+  map<string, string> parameters = 5;
+  string reclaim_policy = 6;
+  repeated string mount_options = 7;
+  bool allow_volume_expansion = 8;
+  string volume_binding_mode = 9;
+  repeated TopologySpreadConstraint allowed_topologies = 10;
+}
+
+message TopologySpreadConstraint {
+  int32 max_skew = 1;
+  string topology_key = 2;
+  string when_unsatisfiable = 3;
+  LabelSelector label_selector = 4;
+}
+
+// ConfigMap
+message ConfigMap {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  map<string, string> data = 4;
+  map<string, bytes> binary_data = 5;
+  bool immutable = 6;
+}
+
+// Secret
+message Secret {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  map<string, bytes> data = 4;
+  map<string, string> string_data = 5;
+  string type = 6;
+  bool immutable = 7;
+}
+
+// RBAC and Security
+
+// ServiceAccount
+message ServiceAccount {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  repeated ObjectReference secrets = 4;
+  repeated LocalObjectReference image_pull_secrets = 5;
+  bool automount_service_account_token = 6;
+}
+
+// Role
+message Role {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  repeated PolicyRule rules = 4;
+}
+
+// ClusterRole
+message ClusterRole {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  repeated PolicyRule rules = 4;
+  AggregationRule aggregation_rule = 5;
+}
+
+message PolicyRule {
+  repeated string verbs = 1;
+  repeated string api_groups = 2;
+  repeated string resources = 3;
+  repeated string resource_names = 4;
+  repeated NonResourcePolicyRule non_resource_urls = 5;
+}
+
+message NonResourcePolicyRule {
+  repeated string verbs = 1;
+  repeated string non_resource_urls = 2;
+}
+
+message AggregationRule {
+  repeated LabelSelector cluster_role_selectors = 1;
+}
+
+// RoleBinding
+message RoleBinding {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  repeated Subject subjects = 4;
+  RoleRef role_ref = 5;
+}
+
+// ClusterRoleBinding
+message ClusterRoleBinding {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  repeated Subject subjects = 4;
+  RoleRef role_ref = 5;
+}
+
+message Subject {
+  string kind = 1;
+  string api_group = 2;
+  string name = 3;
+  string namespace = 4;
+}
+
+message RoleRef {
+  string api_group = 1;
+  string kind = 2;
+  string name = 3;
+}
+
+// PodSecurityPolicy
+message PodSecurityPolicy {
+  string api_version = 1;
+  string kind = 2;
+  ObjectMeta metadata = 3;
+  PodSecurityPolicySpec spec = 4;
+}
+
+message PodSecurityPolicySpec {
+  bool privileged = 1;
+  bool allow_privilege_escalation = 2;
+  repeated string required_drop_capabilities = 3;
+  repeated string allowed_capabilities = 4;
+  repeated string default_add_capabilities = 5;
+  repeated string allowed_volume_types = 6;
+  bool host_network = 7;
+  repeated HostPortRange host_ports = 8;
+  bool host_pid = 9;
+  bool host_ipc = 10;
+  SELinuxStrategyOptions se_linux = 11;
+  RunAsUserStrategyOptions run_as_user = 12;
+  RunAsGroupStrategyOptions run_as_group = 13;
+  FSGroupStrategyOptions fs_group = 14;
+  bool read_only_root_filesystem = 15;
+}
+
+message HostPortRange {
+  int32 min = 1;
+  int32 max = 2;
+}
+
+message SELinuxStrategyOptions {
+  string rule = 1;
+  SELinuxOptions se_linux_options = 2;
+}
+
+message RunAsUserStrategyOptions {
+  string rule = 1;
+  repeated IDRange ranges = 2;
+}
+
+message RunAsGroupStrategyOptions {
+  string rule = 1;
+  repeated IDRange ranges = 2;
+}
+
+message FSGroupStrategyOptions {
+  string rule = 1;
+  repeated IDRange ranges = 2;
+}
+
+message IDRange {
+  int64 min = 1;
+  int64 max = 2;
+}
