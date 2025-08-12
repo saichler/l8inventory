@@ -34,14 +34,14 @@ message OwnerReference {
 
 // Common status
 message ObjectStatus {
-  repeated Condition conditions = 1;
+  repeated KCondition conditions = 1;
   string phase = 2;
   string message = 3;
   string reason = 4;
   int32 observed_generation = 5;
 }
 
-message Condition {
+message KCondition {
   string type = 1;
   string status = 2;
   string last_transition_time = 3;
@@ -67,7 +67,7 @@ message NamespaceSpec {
 
 message NamespaceStatus {
   string phase = 1;
-  repeated Condition conditions = 2;
+  repeated KCondition conditions = 2;
 }
 
 // Node
@@ -97,7 +97,7 @@ message NodeStatus {
   string allocatable_storage = 7;
   string allocatable_ephemeral_storage = 8;
   string phase = 9;
-  repeated Condition conditions = 10;
+  repeated KCondition conditions = 10;
   repeated NodeAddress addresses = 11;
   repeated ContainerImage images = 12;
   NodeSystemInfo node_info = 13;
@@ -464,7 +464,7 @@ message LabelSelectorRequirement {
 
 message PodStatus {
   string phase = 1;
-  repeated Condition conditions = 2;
+  repeated KCondition conditions = 2;
   string message = 3;
   string reason = 4;
   string nominated_node_name = 5;
@@ -557,7 +557,7 @@ message DeploymentStatus {
   int32 ready_replicas = 4;
   int32 available_replicas = 5;
   int32 unavailable_replicas = 6;
-  repeated Condition conditions = 7;
+  repeated KCondition conditions = 7;
   int32 collision_count = 8;
 }
 
@@ -583,7 +583,7 @@ message ReplicaSetStatus {
   int32 ready_replicas = 3;
   int32 available_replicas = 4;
   int64 observed_generation = 5;
-  repeated Condition conditions = 6;
+  repeated KCondition conditions = 6;
 }
 
 // StatefulSet
@@ -624,7 +624,7 @@ message StatefulSetStatus {
   string current_revision = 6;
   string update_revision = 7;
   int32 collision_count = 8;
-  repeated Condition conditions = 9;
+  repeated KCondition conditions = 9;
 }
 
 // DaemonSet
@@ -663,7 +663,7 @@ message DaemonSetStatus {
   int32 number_available = 7;
   int32 number_unavailable = 8;
   int32 collision_count = 9;
-  repeated Condition conditions = 10;
+  repeated KCondition conditions = 10;
 }
 
 // Job
@@ -689,7 +689,7 @@ message JobSpec {
 }
 
 message JobStatus {
-  repeated Condition conditions = 1;
+  repeated KCondition conditions = 1;
   string start_time = 2;
   string completion_time = 3;
   int32 active = 4;
@@ -793,7 +793,7 @@ message ClientIPConfig {
 
 message ServiceStatus {
   LoadBalancerStatus load_balancer = 1;
-  repeated Condition conditions = 2;
+  repeated KCondition conditions = 2;
 }
 
 message LoadBalancerStatus {
@@ -1064,7 +1064,7 @@ message PersistentVolumeClaimStatus {
   string phase = 1;
   repeated string access_modes = 2;
   map<string, string> capacity = 3;
-  repeated Condition conditions = 4;
+  repeated KCondition conditions = 4;
   string allocated_resources = 5;
   string resize_status = 6;
 }
