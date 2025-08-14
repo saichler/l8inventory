@@ -4,6 +4,7 @@ import (
 	"github.com/saichler/l8pollaris/go/types"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	types2 "github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/web"
 	"google.golang.org/protobuf/proto"
 )
@@ -115,7 +116,7 @@ func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
 func (this *InventoryService) WebService() ifs.IWebService {
 	ws := web.New(this.serviceName, this.serviceArea, nil,
 		nil, nil, nil, nil, nil, nil, nil,
-		this.itemSample.(proto.Message), this.itemSample.(proto.Message))
+		&types2.Query{}, this.itemSample.(proto.Message))
 	return ws
 }
 
