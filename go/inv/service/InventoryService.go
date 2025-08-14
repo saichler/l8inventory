@@ -96,8 +96,12 @@ func (this *InventoryService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElem
 }
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Get Executed...")
-	elem := this.inventoryCenter.Get(pb.Element())
-	return object.New(nil, elem)
+	query, err := pb.Query(vnic.Resources())
+	if err != nil {
+		return object.NewError(err.Error())
+	}
+	elems := this.inventoryCenter.Get(query)
+	return object.New(nil, elems)
 }
 func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil

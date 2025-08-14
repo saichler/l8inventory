@@ -44,16 +44,15 @@ func (this *InventoryCenter) Add(elem interface{}, isNotification bool) {
 	}
 }
 
-func (this *InventoryCenter) Get(elem interface{}) interface{} {
-	_, ok := elem.(ifs.IElements)
-	if ok {
-		panic("Element is not stripped from IElements")
-	}
-	key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
-	if key != "" {
-		return this.elements.Get(key)
-	}
-	return nil
+func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
+	result := make([]interface{}, 0)
+	this.elements.Collect(func(elem interface{}) (bool, interface{}) {
+		if query.Match(elem) {
+			result = append(result, elem)
+		}
+		return true, elem
+	})
+	return result
 }
 
 func (this *InventoryCenter) Update(elem interface{}, isNotification bool) {
