@@ -36,12 +36,24 @@ func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribut
 func (this *InventoryCenter) Add(elem interface{}, isNotification bool) {
 	_, ok := elem.(ifs.IElements)
 	if ok {
-		panic("")
+		panic("Element is not stripped from IElements")
 	}
 	key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
 	if key != "" {
 		this.elements.Put(key, elem, isNotification)
 	}
+}
+
+func (this *InventoryCenter) Get(elem interface{}) interface{} {
+	_, ok := elem.(ifs.IElements)
+	if ok {
+		panic("Element is not stripped from IElements")
+	}
+	key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
+	if key != "" {
+		return this.elements.Get(key)
+	}
+	return nil
 }
 
 func (this *InventoryCenter) Update(elem interface{}, isNotification bool) {

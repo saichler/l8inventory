@@ -2,7 +2,10 @@ package inventory
 
 import (
 	"github.com/saichler/l8pollaris/go/types"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8utils/go/utils/web"
+	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -92,7 +95,9 @@ func (this *InventoryService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElem
 	return nil
 }
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	return nil
+	vnic.Resources().Logger().Info("Get Executed...")
+	elem := this.inventoryCenter.Get(pb.Element())
+	return object.New(nil, elem)
 }
 func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
@@ -104,7 +109,10 @@ func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
 	return nil
 }
 func (this *InventoryService) WebService() ifs.IWebService {
-	return nil
+	ws := web.New(this.serviceName, this.serviceArea, nil,
+		nil, nil, nil, nil, nil, nil, nil,
+		this.itemSample.(proto.Message), this.itemSample.(proto.Message))
+	return ws
 }
 
 /*
