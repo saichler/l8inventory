@@ -37,7 +37,7 @@ func TestInventory(t *testing.T) {
 	time.Sleep(time.Second)
 
 	ci := topo.VnicByVnetNum(1, 1)
-	ci.Single(serviceName, serviceArea, ifs.POST, elem)
+	ci.Proximity(serviceName, serviceArea, ifs.POST, elem)
 
 	time.Sleep(time.Second)
 
@@ -53,7 +53,7 @@ func TestInventory(t *testing.T) {
 	}
 
 	elem = &testtypes.TestProto{MyString: "Hello World", MyInt32: 13}
-	ci.Single(serviceName, serviceArea, ifs.PATCH, elem)
+	ci.Proximity(serviceName, serviceArea, ifs.PATCH, elem)
 	time.Sleep(time.Second)
 
 	if mock.PatchCount() != 1 {

@@ -48,7 +48,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 				vnic.Resources().Logger().Info("Forawrding Post to ", this.forwardService.ServiceName, " area ",
 					this.forwardService.ServiceArea)
 				elem := this.inventoryCenter.ElementByElement(elements.Element())
-				resp := this.nic.SingleRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea),
+				resp := this.nic.ProximityRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea),
 					ifs.POST, elem)
 				if resp != nil && resp.Error() != nil {
 					panic(resp.Error())
@@ -75,7 +75,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 				vnic.Resources().Logger().Info("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
 					this.forwardService.ServiceArea)
 				elem := this.inventoryCenter.ElementByElement(elements.Element())
-				resp := this.nic.SingleRequest(this.forwardService.ServiceName,
+				resp := this.nic.ProximityRequest(this.forwardService.ServiceName,
 					byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
 				if resp != nil && resp.Error() != nil {
 					vnic.Resources().Logger().Error(resp.Error().Error())
