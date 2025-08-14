@@ -35,6 +35,7 @@ func (this *InventoryService) Activate(serviceName string, serviceArea byte,
 	this.serviceName = serviceName
 	this.serviceArea = serviceArea
 	this.itemSample = args[1]
+	r.Registry().Register(&types2.Query{})
 	return nil
 }
 
