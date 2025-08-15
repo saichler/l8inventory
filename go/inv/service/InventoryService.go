@@ -7,6 +7,7 @@ import (
 	types2 "github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/web"
 	"google.golang.org/protobuf/proto"
+	"reflect"
 )
 
 const (
@@ -20,6 +21,7 @@ type InventoryService struct {
 	serviceName     string
 	serviceArea     byte
 	itemSample      interface{}
+	itemSampleList  proto.Message
 }
 
 func (this *InventoryService) Activate(serviceName string, serviceArea byte,
@@ -35,6 +37,7 @@ func (this *InventoryService) Activate(serviceName string, serviceArea byte,
 	this.serviceName = serviceName
 	this.serviceArea = serviceArea
 	this.itemSample = args[1]
+	this.itemSampleList = ItemListType(r.Registry(), this.itemSample)
 	r.Registry().Register(&types2.Query{})
 	return nil
 }
@@ -117,8 +120,22 @@ func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
 func (this *InventoryService) WebService() ifs.IWebService {
 	ws := web.New(this.serviceName, this.serviceArea, nil,
 		nil, nil, nil, nil, nil, nil, nil,
-		&types2.Query{}, this.itemSample.(proto.Message))
+		&types2.Query{}, this.itemSampleList)
 	return ws
+}
+
+func ItemListType(r ifs.IRegistry, any interface{}) proto.Message {
+	v := reflect.ValueOf(any).Elem()
+	listName := v.Type().Name() + "List"
+	info, err := r.Info(listName)
+	if err != nil {
+		panic(err)
+	}
+	list, err := info.NewInstance()
+	if err != nil {
+		panic(err)
+	}
+	return list.(proto.Message)
 }
 
 /*
