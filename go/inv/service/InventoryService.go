@@ -106,6 +106,7 @@ func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 		return object.NewError(err.Error())
 	}
 	elems := this.inventoryCenter.Get(query)
+	vnic.Resources().Logger().Info("Get Completed with ", len(elems), " elements for query:")
 	return object.New(nil, elems)
 }
 func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {

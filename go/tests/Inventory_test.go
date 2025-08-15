@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	inventory "github.com/saichler/l8inventory/go/inv/service"
 	"github.com/saichler/l8inventory/go/tests/utils_inventory"
 	"github.com/saichler/l8pollaris/go/types"
@@ -79,5 +80,6 @@ func TestInventory(t *testing.T) {
 		vnic.Resources().Logger().Fail(t, "Unable to create query", e.Error())
 		return
 	}
-	inventoryCenter.Get(q)
+	all := inventoryCenter.Get(q)
+	fmt.Println(all)
 }
