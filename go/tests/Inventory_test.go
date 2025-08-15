@@ -4,6 +4,7 @@ import (
 	inventory "github.com/saichler/l8inventory/go/inv/service"
 	"github.com/saichler/l8inventory/go/tests/utils_inventory"
 	"github.com/saichler/l8pollaris/go/types"
+	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
 	"testing"
@@ -67,4 +68,16 @@ func TestInventory(t *testing.T) {
 		vnic.Resources().Logger().Fail(t, "Expected values to match")
 		return
 	}
+
+	elems, e := object.NewQuery("select * from testproto where mystring=*", vnic.Resources())
+	if e != nil {
+		vnic.Resources().Logger().Fail(t, "Unable to create query", e.Error())
+		return
+	}
+	q, e := elems.Query(vnic.Resources())
+	if e != nil {
+		vnic.Resources().Logger().Fail(t, "Unable to create query", e.Error())
+		return
+	}
+	inventoryCenter.Get(q)
 }

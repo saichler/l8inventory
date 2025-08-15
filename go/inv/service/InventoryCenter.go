@@ -47,10 +47,11 @@ func (this *InventoryCenter) Add(elem interface{}, isNotification bool) {
 func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
 	result := make([]interface{}, 0)
 	this.elements.Collect(func(elem interface{}) (bool, interface{}) {
-		if query.Match(elem) {
+		match := query.Match(elem)
+		if match {
 			result = append(result, elem)
 		}
-		return true, elem
+		return match, elem
 	})
 	return result
 }
