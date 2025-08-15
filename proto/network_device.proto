@@ -30,6 +30,11 @@ enum TreeNodeStatus {
   MAINTENANCE = 5;
 }
 
+// Network Device List
+message NetworkDeviceList {
+  repeated NetworkDevice list = 1;
+}
+
 // Root network device containing all layers
 message NetworkDevice {
   string id = 1;
