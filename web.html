@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>l8inventory - Distributed Inventory Cache</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 5rem 0;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: #fff;
+            color: #667eea;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .features {
+            background: white;
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .architecture {
+            background: #f8f9fa;
+            padding: 5rem 0;
+        }
+
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .arch-component {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Menlo', monospace;
+            margin: 1rem 0;
+        }
+
+        .installation {
+            background: white;
+            padding: 5rem 0;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .footer {
+            background: #2d3748;
+            color: white;
+            padding: 3rem 0;
+            text-align: center;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: #cbd5e0;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo">l8inventory</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#installation">Installation</a></li>
+                <li><a href="#usage">Usage</a></li>
+                <li><a href="https://github.com/saichler/l8inventory">GitHub</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1>l8inventory</h1>
+            <p>A generic and model-agnostic distributed inventory cache for collected and parsed data</p>
+            <a href="#installation" class="cta-button">Get Started</a>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">Key Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Generic & Model Agnostic</h3>
+                    <p>Works with any data model through Protocol Buffers definitions. Supports network devices, Kubernetes resources, and custom inventory types.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Distributed Architecture</h3>
+                    <p>Built on the Layer 8 ecosystem for distributed operations with robust caching infrastructure.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Advanced Querying</h3>
+                    <p>SQL-like query capabilities for flexible data retrieval with real-time updates and notifications.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Operations</h3>
+                    <p>Support for POST, PATCH operations with immediate notifications and configurable primary key management.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>REST API Interface</h3>
+                    <p>Complete web service interface with REST API endpoints for seamless external integration.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <h3>Forwarding Support</h3>
+                    <p>Optional forwarding to downstream services for complex data processing pipelines.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture" class="architecture">
+        <div class="container">
+            <h2 class="section-title">Architecture</h2>
+            <div class="arch-grid">
+                <div class="arch-component">
+                    <h3>InventoryService</h3>
+                    <p>Main service handler implementing the Layer 8 service interface for distributed operations.</p>
+                </div>
+                <div class="arch-component">
+                    <h3>InventoryCenter</h3>
+                    <p>Core inventory management with distributed caching capabilities and data persistence.</p>
+                </div>
+                <div class="arch-component">
+                    <h3>Query Engine</h3>
+                    <p>SQL-like query processing engine for flexible and efficient data retrieval operations.</p>
+                </div>
+                <div class="arch-component">
+                    <h3>Protocol Buffers</h3>
+                    <p>Network devices, Kubernetes resources, and custom data models with comprehensive type support.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="installation" class="installation">
+        <div class="container">
+            <h2 class="section-title">Installation & Usage</h2>
+            <div class="two-column">
+                <div>
+                    <h3>Prerequisites</h3>
+                    <ul style="margin-left: 1.5rem; margin-bottom: 2rem;">
+                        <li>Go 1.23.8 or later</li>
+                        <li>Layer 8 ecosystem dependencies</li>
+                    </ul>
+
+                    <h3>Quick Start</h3>
+                    <div class="code-block">cd go/
+./test.sh
+
+# Manual setup
+go mod init
+GOPROXY=direct GOPRIVATE=github.com go mod tidy
+go mod vendor
+go test -tags=unit -v -coverpkg=./inv/... -coverprofile=cover.html ./...</div>
+                </div>
+                <div>
+                    <h3>Basic Usage</h3>
+                    <div class="code-block">import (
+    inventory "github.com/saichler/l8inventory/go/inv/service"
+    "github.com/saichler/l8types/go/ifs"
+)
+
+// Activate inventory service
+serviceName := "inventory"
+serviceArea := byte(0)
+primaryKey := "id"
+elemType := &YourProtobufMessage{}
+
+vnic.Resources().Services().Activate(
+    inventory.ServiceType, 
+    serviceName, 
+    serviceArea, 
+    resources, 
+    listener,
+    primaryKey, 
+    elemType,
+)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="usage" class="features">
+        <div class="container">
+            <h2 class="section-title">Supported Operations</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>POST</h3>
+                    <p>Add new inventory items to the distributed cache with automatic validation and indexing.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>PATCH</h3>
+                    <p>Update existing inventory items with delta changes and real-time notifications.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>GET</h3>
+                    <p>Query and retrieve inventory data using SQL-like syntax with advanced filtering.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>DELETE</h3>
+                    <p>Remove inventory items with proper cleanup and cascade operations support.</p>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 4rem;">Data Models</h2>
+            <div class="two-column">
+                <div class="arch-component">
+                    <h3>Network Devices</h3>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>NetworkBox (routers, switches)</li>
+                        <li>Equipment information</li>
+                        <li>Physical topology</li>
+                        <li>Logical interfaces</li>
+                    </ul>
+                </div>
+                <div class="arch-component">
+                    <h3>Kubernetes Resources</h3>
+                    <ul style="margin-left: 1.5rem;">
+                        <li>Core resources (Pods, Services, Nodes)</li>
+                        <li>Workloads (Deployments, StatefulSets)</li>
+                        <li>Networking (Ingress, NetworkPolicy)</li>
+                        <li>Storage & Configuration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://github.com/saichler/l8inventory">GitHub Repository</a>
+                <a href="https://github.com/saichler/l8services">l8services</a>
+                <a href="https://github.com/saichler/l8types">l8types</a>
+                <a href="https://github.com/saichler/layer8">Layer 8 Framework</a>
+            </div>
+            <p>&copy; 2025 l8inventory. Licensed under Apache License 2.0. Part of the Layer 8 ecosystem.</p>
+        </div>
+    </footer>
+</body>
+</html>
