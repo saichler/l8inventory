@@ -63,4 +63,168 @@ message Port {
 message Interface {
   string id = 1;
   string status = 2;
+  TrafficEngineeringInfo te_info = 3;
+  QosInfo qos_info = 4;
+}
+
+message TrafficEngineeringInfo {
+  bool te_enabled = 1;
+  uint64 max_reservable_bandwidth = 2;
+  repeated uint64 unreserved_bandwidth = 3;
+  repeated TeTunnel te_tunnels = 4;
+  RsvpInfo rsvp_info = 5;
+}
+
+message TeTunnel {
+  string tunnel_id = 1;
+  string name = 2;
+  string destination = 3;
+  string source = 4;
+  TunnelStatus status = 5;
+  uint32 setup_priority = 6;
+  uint32 hold_priority = 7;
+  uint64 bandwidth = 8;
+  repeated string explicit_path = 9;
+  TunnelType tunnel_type = 10;
+  repeated TeLsp lsps = 11;
+  TeMetrics metrics = 12;
+}
+
+message TeLsp {
+  string lsp_id = 1;
+  LspStatus status = 2;
+  repeated string path_hops = 3;
+  uint64 bandwidth = 4;
+  TeMetrics metrics = 5;
+}
+
+message RsvpInfo {
+  bool rsvp_enabled = 1;
+  uint32 hello_interval = 2;
+  uint32 hello_missed = 3;
+  repeated RsvpSession sessions = 4;
+  repeated RsvpReservation reservations = 5;
+}
+
+message RsvpSession {
+  string session_id = 1;
+  string destination = 2;
+  uint32 tunnel_id = 3;
+  uint32 extended_tunnel_id = 4;
+  SessionStatus status = 5;
+}
+
+message RsvpReservation {
+  string reservation_id = 1;
+  string session_id = 2;
+  uint64 bandwidth = 3;
+  uint32 setup_priority = 4;
+  uint32 hold_priority = 5;
+  ReservationStatus status = 6;
+}
+
+message QosInfo {
+  repeated QosPolicy policies = 1;
+  repeated ClassMap class_maps = 2;
+  repeated PolicyMap policy_maps = 3;
+}
+
+message QosPolicy {
+  string name = 1;
+  string direction = 2;
+  repeated QosClass classes = 3;
+  QosPolicyStats stats = 4;
+}
+
+message ClassMap {
+  string name = 1;
+  string match_type = 2;
+  repeated string match_criteria = 3;
+}
+
+message PolicyMap {
+  string name = 1;
+  repeated PolicyClass policy_classes = 2;
+}
+
+message PolicyClass {
+  string class_name = 1;
+  repeated QosAction actions = 2;
+}
+
+message QosAction {
+  ActionType action_type = 1;
+  string action_value = 2;
+}
+
+message QosClass {
+  string class_name = 1;
+  uint64 offered_rate = 2;
+  uint64 drop_rate = 3;
+  uint64 match_packets = 4;
+  uint64 match_bytes = 5;
+}
+
+message QosPolicyStats {
+  uint64 total_packets = 1;
+  uint64 total_bytes = 2;
+  uint64 total_drops = 3;
+  repeated QosClass class_stats = 4;
+}
+
+message TeMetrics {
+  uint64 packets_sent = 1;
+  uint64 bytes_sent = 2;
+  uint64 packets_received = 3;
+  uint64 bytes_received = 4;
+  uint64 setup_time = 5;
+  uint64 last_flap_time = 6;
+  uint32 flap_count = 7;
+}
+
+enum TunnelStatus {
+  TUNNEL_UNKNOWN = 0;
+  TUNNEL_UP = 1;
+  TUNNEL_DOWN = 2;
+  TUNNEL_ADMIN_DOWN = 3;
+}
+
+enum TunnelType {
+  TUNNEL_TYPE_UNKNOWN = 0;
+  TUNNEL_TYPE_P2P = 1;
+  TUNNEL_TYPE_P2MP = 2;
+  TUNNEL_TYPE_MP2MP = 3;
+}
+
+enum LspStatus {
+  LSP_UNKNOWN = 0;
+  LSP_ACTIVE = 1;
+  LSP_INACTIVE = 2;
+  LSP_FAILED = 3;
+}
+
+enum SessionStatus {
+  SESSION_UNKNOWN = 0;
+  SESSION_ACTIVE = 1;
+  SESSION_INACTIVE = 2;
+  SESSION_FAILED = 3;
+}
+
+enum ReservationStatus {
+  RESERVATION_UNKNOWN = 0;
+  RESERVATION_ACTIVE = 1;
+  RESERVATION_INACTIVE = 2;
+  RESERVATION_FAILED = 3;
+}
+
+enum ActionType {
+  ACTION_UNKNOWN = 0;
+  ACTION_SET_DSCP = 1;
+  ACTION_SET_PRECEDENCE = 2;
+  ACTION_POLICE = 3;
+  ACTION_SHAPE = 4;
+  ACTION_BANDWIDTH = 5;
+  ACTION_PRIORITY = 6;
+  ACTION_QUEUE_LIMIT = 7;
+  ACTION_DROP = 8;
 }
