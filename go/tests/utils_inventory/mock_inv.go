@@ -23,7 +23,7 @@ func createMockNetworkDevice(index int) *types.NetworkDevice {
 
 	return &types.NetworkDevice{
 		Id: deviceID,
-		Info: &types.EquipmentInfo{
+		Equipmentinfo: &types.EquipmentInfo{
 			Vendor:          "Cisco",
 			Model:           "Catalyst 9300",
 			Series:          "9300",
