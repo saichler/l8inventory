@@ -1,13 +1,14 @@
 package inventory
 
 import (
+	"reflect"
+
 	"github.com/saichler/l8pollaris/go/types"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	types2 "github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/web"
 	"google.golang.org/protobuf/proto"
-	"reflect"
 )
 
 const (
@@ -50,21 +51,19 @@ func (this *InventoryService) DeActivate() error {
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Post Received inventory item...")
 	this.inventoryCenter.Add(elements.Element(), elements.Notification())
-	if !elements.Notification() {
+	if !elements.Notification() && this.forwardService != nil {
 		go func() {
-			if this.forwardService != nil {
-				vnic.Resources().Logger().Info("Forawrding Post to ", this.forwardService.ServiceName, " area ",
+			vnic.Resources().Logger().Info("Forawrding Post to ", this.forwardService.ServiceName, " area ",
+				this.forwardService.ServiceArea)
+			elem := this.inventoryCenter.ElementByElement(elements.Element())
+			resp := this.nic.ProximityRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea),
+				ifs.POST, elem)
+			if resp != nil && resp.Error() != nil {
+				panic(resp.Error())
+				vnic.Resources().Logger().Error(resp.Error().Error())
+			} else {
+				vnic.Resources().Logger().Info("Post Finished to ", this.forwardService.ServiceName, " area ",
 					this.forwardService.ServiceArea)
-				elem := this.inventoryCenter.ElementByElement(elements.Element())
-				resp := this.nic.ProximityRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea),
-					ifs.POST, elem)
-				if resp != nil && resp.Error() != nil {
-					panic(resp.Error())
-					vnic.Resources().Logger().Error(resp.Error().Error())
-				} else {
-					vnic.Resources().Logger().Info("Post Finished to ", this.forwardService.ServiceName, " area ",
-						this.forwardService.ServiceArea)
-				}
 			}
 		}()
 	}
@@ -77,20 +76,18 @@ func (this *InventoryService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Patch Received inventory item...")
 	this.inventoryCenter.Update(elements.Element(), elements.Notification())
-	if !elements.Notification() {
+	if !elements.Notification() && this.forwardService != nil {
 		go func() {
-			if this.forwardService != nil {
-				vnic.Resources().Logger().Info("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
+			vnic.Resources().Logger().Info("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
+				this.forwardService.ServiceArea)
+			elem := this.inventoryCenter.ElementByElement(elements.Element())
+			resp := this.nic.ProximityRequest(this.forwardService.ServiceName,
+				byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
+			if resp != nil && resp.Error() != nil {
+				vnic.Resources().Logger().Error(resp.Error().Error())
+			} else {
+				vnic.Resources().Logger().Info("Patch Finished to ", this.forwardService.ServiceName, " area ",
 					this.forwardService.ServiceArea)
-				elem := this.inventoryCenter.ElementByElement(elements.Element())
-				resp := this.nic.ProximityRequest(this.forwardService.ServiceName,
-					byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
-				if resp != nil && resp.Error() != nil {
-					vnic.Resources().Logger().Error(resp.Error().Error())
-				} else {
-					vnic.Resources().Logger().Info("Patch Finished to ", this.forwardService.ServiceName, " area ",
-						this.forwardService.ServiceArea)
-				}
 			}
 		}()
 	}
