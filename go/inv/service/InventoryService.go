@@ -105,7 +105,7 @@ func (this *InventoryService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.
 	return nil
 }
 func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
-	return nil
+	return this
 }
 
 func (this *InventoryService) Replication() bool {
