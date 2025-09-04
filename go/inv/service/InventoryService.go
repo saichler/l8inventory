@@ -8,6 +8,7 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	types2 "github.com/saichler/l8types/go/types"
 	"github.com/saichler/l8utils/go/utils/web"
+	"github.com/saichler/reflect/go/reflect/introspecting"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -49,6 +50,7 @@ func (this *InventoryService) DeActivate() error {
 }
 
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	vnic.Resources().Logger().Info("Post Received inventory item...")
 	this.inventoryCenter.Add(elements.Element(), elements.Notification())
 	if !elements.Notification() && this.forwardService != nil {
 		go func() {
@@ -82,6 +84,12 @@ func (this *InventoryService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElem
 }
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Get Executed...")
+
+	result, ok := this.isSingleElement(pb, vnic)
+	if ok {
+		return result
+	}
+
 	query, err := pb.Query(vnic.Resources())
 	if err != nil {
 		return object.NewError(err.Error())
@@ -97,8 +105,19 @@ func (this *InventoryService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.
 	return nil
 }
 func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
-	return nil
+	return this
 }
+
+func (this *InventoryService) Replication() bool {
+	return false
+}
+func (this *InventoryService) ReplicationCount() int {
+	return 0
+}
+func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResources) string {
+	return ""
+}
+
 func (this *InventoryService) WebService() ifs.IWebService {
 	ws := web.New(this.serviceName, this.serviceArea, nil,
 		nil, nil, nil, nil, nil, nil, nil,
@@ -120,13 +139,29 @@ func ItemListType(r ifs.IRegistry, any interface{}) proto.Message {
 	return list.(proto.Message)
 }
 
-/*
-func (this *InventoryService) Replication() bool {
-	return false
+func (this *InventoryService) isSingleElement(pb ifs.IElements, vnic ifs.IVNic) (ifs.IElements, bool) {
+	ins, ok := pb.Element().(proto.Message)
+	if ok {
+		aside := reflect.ValueOf(ins).Elem().Type().Name()
+		bside := reflect.ValueOf(this.itemSample).Elem().Type().Name()
+		if aside == bside {
+			rnode, ok := vnic.Resources().Introspector().NodeByTypeName(bside)
+			if ok {
+				fields := introspecting.PrimaryKeyDecorator(rnode).([]string)
+				v := reflect.ValueOf(ins).Elem().FieldByName(fields[0])
+				gsql := "select * from " + bside + " where " + fields[0] + "=" + v.String()
+				q1, err := object.NewQuery(gsql, vnic.Resources())
+				if err != nil {
+					panic(gsql + " " + err.Error())
+				}
+				q2, err := q1.Query(vnic.Resources())
+				if err != nil {
+					panic(gsql + " " + err.Error())
+				}
+				result := this.inventoryCenter.Get(q2)
+				return object.New(nil, result), true
+			}
+		}
+	}
+	return nil, false
 }
-func (this *InventoryService) ReplicationCount() int {
-	return 0
-}
-func (this *InventoryService) KeyOf(elements ifs.IElements) string {
-	return ""
-}*/

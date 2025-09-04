@@ -1,10 +1,11 @@
 package inventory
 
 import (
+	"reflect"
+
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/reflect/go/reflect/introspecting"
-	"reflect"
 )
 
 type InventoryCenter struct {

@@ -2,14 +2,15 @@ package tests
 
 import (
 	"fmt"
+	"testing"
+	"time"
+
 	inventory "github.com/saichler/l8inventory/go/inv/service"
 	"github.com/saichler/l8inventory/go/tests/utils_inventory"
 	"github.com/saichler/l8pollaris/go/types"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
-	"testing"
-	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -39,9 +40,7 @@ func TestInventory(t *testing.T) {
 	time.Sleep(time.Second)
 
 	ci := topo.VnicByVnetNum(1, 1)
-	ci.Proximity(serviceName, serviceArea, ifs.POST, elem)
-
-	time.Sleep(time.Second)
+	ci.ProximityRequest(serviceName, serviceArea, ifs.POST, elem)
 
 	m, ok := vnic.Resources().Services().ServiceHandler(forwardInfo.ServiceName, byte(forwardInfo.ServiceArea))
 	if !ok {
@@ -55,8 +54,7 @@ func TestInventory(t *testing.T) {
 	}
 
 	elem = &testtypes.TestProto{MyString: "Hello World", MyInt32: 13}
-	ci.Proximity(serviceName, serviceArea, ifs.PATCH, elem)
-	time.Sleep(time.Second)
+	ci.ProximityRequest(serviceName, serviceArea, ifs.PATCH, elem)
 
 	if mock.PatchCount() != 1 {
 		vnic.Resources().Logger().Fail(t, "Expected 1 patch count in mock")
