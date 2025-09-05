@@ -57,10 +57,12 @@ func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
 	return result
 }
 
-func (this *InventoryCenter) Update(elem interface{}, isNotification bool) {
-	key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
-	if key != "" {
-		this.elements.Update(key, elem, isNotification)
+func (this *InventoryCenter) Update(elements ifs.IElements) {
+	for _, elem := range elements.Elements() {
+		key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
+		if key != "" {
+			this.elements.Update(key, elem, elements.Notification())
+		}
 	}
 }
 

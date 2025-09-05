@@ -67,7 +67,7 @@ func (this *InventoryService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 }
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Patch Received inventory item...")
-	this.inventoryCenter.Update(elements.Element(), elements.Notification())
+	this.inventoryCenter.Update(elements)
 	if !elements.Notification() && this.forwardService != nil {
 		go func() {
 			vnic.Resources().Logger().Debug("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
