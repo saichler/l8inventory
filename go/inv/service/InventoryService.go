@@ -115,7 +115,7 @@ func (this *InventoryService) ReplicationCount() int {
 	return 0
 }
 func (this *InventoryService) ConcurrentGets() bool {
-	return true
+	return false
 }
 func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResources) string {
 	return ""
