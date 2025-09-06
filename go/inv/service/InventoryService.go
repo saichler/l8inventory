@@ -57,7 +57,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 		go func() {
 			vnic.Resources().Logger().Debug("Forawrding Post to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.Leader(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem)
+			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem)
 		}()
 	}
 	return nil
@@ -74,8 +74,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 			vnic.Resources().Logger().Debug("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
 				this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.Leader(this.forwardService.ServiceName,
-				byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
+			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
 		}()
 	}
 	return nil
