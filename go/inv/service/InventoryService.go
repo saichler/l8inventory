@@ -34,6 +34,7 @@ func (this *InventoryService) Activate(serviceName string, serviceArea byte,
 	if len(args) == 3 {
 		this.forwardService = args[2].(*types.DeviceServiceInfo)
 		this.nic = l.(ifs.IVNic)
+		this.nic.RegisterServiceBatch(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.M_Leader, 5)
 		r.Logger().Info("Added forwarding to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
 	}
 	this.serviceName = serviceName
@@ -56,7 +57,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 		go func() {
 			vnic.Resources().Logger().Debug("Forawrding Post to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.Proximity(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem)
+			this.nic.Leader(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem)
 		}()
 	}
 	return nil
@@ -73,7 +74,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 			vnic.Resources().Logger().Debug("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
 				this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.Proximity(this.forwardService.ServiceName,
+			this.nic.Leader(this.forwardService.ServiceName,
 				byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
 		}()
 	}
@@ -105,7 +106,7 @@ func (this *InventoryService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.
 	return nil
 }
 func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
-	return nil
+	return this
 }
 
 func (this *InventoryService) Replication() bool {

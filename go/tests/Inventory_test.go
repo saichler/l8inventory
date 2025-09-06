@@ -42,6 +42,8 @@ func TestInventory(t *testing.T) {
 	ci := topo.VnicByVnetNum(1, 1)
 	ci.ProximityRequest(serviceName, serviceArea, ifs.POST, elem)
 
+	time.Sleep(time.Second * 5)
+
 	m, ok := vnic.Resources().Services().ServiceHandler(forwardInfo.ServiceName, byte(forwardInfo.ServiceArea))
 	if !ok {
 		vnic.Resources().Logger().Fail(t, "Cannot find mock service")
@@ -49,12 +51,14 @@ func TestInventory(t *testing.T) {
 	}
 	mock := m.(*utils_inventory.MockOrmService)
 	if mock.PostCount() != 1 {
-		vnic.Resources().Logger().Fail(t, "Expected 1 post count in mock")
+		vnic.Resources().Logger().Fail(t, "Expected 1 post count in mock ", mock.PostCount())
 		return
 	}
 
 	elem = &testtypes.TestProto{MyString: "Hello World", MyInt32: 13}
 	ci.ProximityRequest(serviceName, serviceArea, ifs.PATCH, elem)
+
+	time.Sleep(time.Second * 5)
 
 	if mock.PatchCount() != 1 {
 		vnic.Resources().Logger().Fail(t, "Expected 1 patch count in mock")
