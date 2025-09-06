@@ -57,7 +57,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 		go func() {
 			vnic.Resources().Logger().Debug("Forawrding Post to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem)
+			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem, 30)
 		}()
 	}
 	return nil
@@ -74,7 +74,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 			vnic.Resources().Logger().Debug("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
 				this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PATCH, elem)
+			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PATCH, elem, 30)
 		}()
 	}
 	return nil
@@ -104,7 +104,7 @@ func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IEle
 func (this *InventoryService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Message) ifs.IElements {
 	return nil
 }
-func (this *InventoryService) TransactionMethod() ifs.ITransactionMethod {
+func (this *InventoryService) TransactionConfig() ifs.ITransactionConfig {
 	return this
 }
 
@@ -113,6 +113,9 @@ func (this *InventoryService) Replication() bool {
 }
 func (this *InventoryService) ReplicationCount() int {
 	return 0
+}
+func (this *InventoryService) ConcurrentGets() bool {
+	return true
 }
 func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResources) string {
 	return ""

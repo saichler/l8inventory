@@ -1,10 +1,11 @@
 package utils_inventory
 
 import (
+	"sync"
+
 	"github.com/saichler/l8pollaris/go/types"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
-	"sync"
 )
 
 const (
@@ -64,7 +65,7 @@ func (this *MockOrmService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IEleme
 func (this *MockOrmService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.Message) ifs.IElements {
 	return nil
 }
-func (this *MockOrmService) TransactionMethod() ifs.ITransactionMethod {
+func (this *MockOrmService) TransactionConfig() ifs.ITransactionConfig {
 	return nil
 }
 func (this *MockOrmService) WebService() ifs.IWebService {

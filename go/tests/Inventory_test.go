@@ -40,7 +40,7 @@ func TestInventory(t *testing.T) {
 	time.Sleep(time.Second)
 
 	ci := topo.VnicByVnetNum(1, 1)
-	ci.ProximityRequest(serviceName, serviceArea, ifs.POST, elem)
+	ci.ProximityRequest(serviceName, serviceArea, ifs.POST, elem, 30)
 
 	time.Sleep(time.Second * 5)
 
@@ -56,7 +56,7 @@ func TestInventory(t *testing.T) {
 	}
 
 	elem = &testtypes.TestProto{MyString: "Hello World", MyInt32: 13}
-	ci.ProximityRequest(serviceName, serviceArea, ifs.PATCH, elem)
+	ci.ProximityRequest(serviceName, serviceArea, ifs.PATCH, elem, 30)
 
 	time.Sleep(time.Second * 5)
 
