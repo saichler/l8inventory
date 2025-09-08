@@ -51,8 +51,7 @@ func (this *InventoryService) DeActivate() error {
 }
 
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	vnic.Resources().Logger().Info("Post Received inventory item...")
-	this.inventoryCenter.Add(elements.Element(), elements.Notification())
+	this.inventoryCenter.Post(elements)
 	if !elements.Notification() && this.forwardService != nil {
 		go func() {
 			vnic.Resources().Logger().Debug("Forawrding Post to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
@@ -60,27 +59,43 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem, 30)
 		}()
 	}
-	return nil
+	return object.New(nil, this.itemSampleList)
 }
 
-func (this *InventoryService) Put(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	return nil
-}
-func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	vnic.Resources().Logger().Info("Patch Received inventory item...")
-	this.inventoryCenter.Update(elements)
+func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	this.inventoryCenter.Put(elements)
 	if !elements.Notification() && this.forwardService != nil {
 		go func() {
-			vnic.Resources().Logger().Debug("Patch Forawrding to ", this.forwardService.ServiceName, " area ",
-				this.forwardService.ServiceArea)
+			vnic.Resources().Logger().Debug("Forawrding Put to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
+			elem := this.inventoryCenter.ElementByElement(elements.Element())
+			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PUT, elem, 30)
+		}()
+	}
+	return object.New(nil, this.itemSampleList)
+}
+
+func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	this.inventoryCenter.Patch(elements)
+	if !elements.Notification() && this.forwardService != nil {
+		go func() {
+			vnic.Resources().Logger().Debug("Forawrding Patch to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
 			elem := this.inventoryCenter.ElementByElement(elements.Element())
 			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PATCH, elem, 30)
 		}()
 	}
-	return nil
+	return object.New(nil, this.itemSampleList)
 }
-func (this *InventoryService) Delete(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	return nil
+
+func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	this.inventoryCenter.Delete(elements)
+	if !elements.Notification() && this.forwardService != nil {
+		go func() {
+			vnic.Resources().Logger().Debug("Forawrding Delete to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
+			elem := this.inventoryCenter.ElementByElement(elements.Element())
+			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.DELETE, elem, 30)
+		}()
+	}
+	return object.New(nil, this.itemSampleList)
 }
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Get Executed...")
@@ -105,7 +120,7 @@ func (this *InventoryService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.
 	return nil
 }
 func (this *InventoryService) TransactionConfig() ifs.ITransactionConfig {
-	return this
+	return nil
 }
 
 func (this *InventoryService) Replication() bool {

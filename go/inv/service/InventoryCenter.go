@@ -28,20 +28,45 @@ func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribut
 	this.resources = resources
 	this.primaryKeyAttribute = primaryKeyAttribute
 	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.elementType.Name(),
-		resources.SysConfig().LocalUuid, nil, resources)
+		resources.SysConfig().LocalUuid, listener, resources)
 	node, _ := resources.Introspector().Inspect(element)
 	introspecting.AddPrimaryKeyDecorator(node, primaryKeyAttribute)
 	return this
 }
 
-func (this *InventoryCenter) Add(elem interface{}, isNotification bool) {
-	_, ok := elem.(ifs.IElements)
-	if ok {
-		panic("Element is not stripped from IElements")
+func (this *InventoryCenter) Post(elements ifs.IElements) {
+	for _, element := range elements.Elements() {
+		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
+		if key != "" {
+			this.elements.Post(key, element, elements.Notification())
+		}
 	}
-	key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
-	if key != "" {
-		this.elements.Put(key, elem, isNotification)
+}
+
+func (this *InventoryCenter) Put(elements ifs.IElements) {
+	for _, element := range elements.Elements() {
+		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
+		if key != "" {
+			this.elements.Put(key, element, elements.Notification())
+		}
+	}
+}
+
+func (this *InventoryCenter) Patch(elements ifs.IElements) {
+	for _, element := range elements.Elements() {
+		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
+		if key != "" {
+			this.elements.Patch(key, element, elements.Notification())
+		}
+	}
+}
+
+func (this *InventoryCenter) Delete(elements ifs.IElements) {
+	for _, element := range elements.Elements() {
+		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
+		if key != "" {
+			this.elements.Delete(key, elements.Notification())
+		}
 	}
 }
 
@@ -55,15 +80,6 @@ func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
 		return match, elem
 	})
 	return result
-}
-
-func (this *InventoryCenter) Update(elements ifs.IElements) {
-	for _, elem := range elements.Elements() {
-		key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
-		if key != "" {
-			this.elements.Update(key, elem, elements.Notification())
-		}
-	}
 }
 
 func (this *InventoryCenter) ElementByKey(key string) interface{} {

@@ -1,8 +1,10 @@
 package inventory
 
 import (
-	"github.com/saichler/l8types/go/ifs"
 	"reflect"
+
+	"github.com/saichler/l8srlz/go/serialize/object"
+	"github.com/saichler/l8types/go/ifs"
 )
 
 func primaryKeyValue(attr string, any interface{}, resources ifs.IResources) string {
@@ -27,5 +29,6 @@ func (this *InventoryCenter) AddEmpty(key string) {
 	elem := reflect.New(this.elementType)
 	field := elem.Elem().FieldByName(this.primaryKeyAttribute)
 	field.Set(reflect.ValueOf(key))
-	this.Add(elem.Interface(), false)
+	element := object.New(nil, elem.Interface())
+	this.Post(element)
 }
