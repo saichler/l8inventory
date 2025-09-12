@@ -27,46 +27,36 @@ func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribut
 	this.elementType = reflect.ValueOf(element).Elem().Type()
 	this.resources = resources
 	this.primaryKeyAttribute = primaryKeyAttribute
-	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.elementType.Name(),
-		resources.SysConfig().LocalUuid, listener, resources)
 	node, _ := resources.Introspector().Inspect(element)
 	introspecting.AddPrimaryKeyDecorator(node, primaryKeyAttribute)
+
+	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, nil,
+		listener, resources)
+
 	return this
 }
 
 func (this *InventoryCenter) Post(elements ifs.IElements) {
 	for _, element := range elements.Elements() {
-		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
-		if key != "" {
-			this.elements.Post(key, element, elements.Notification())
-		}
+		this.elements.Post(element, elements.Notification())
 	}
 }
 
 func (this *InventoryCenter) Put(elements ifs.IElements) {
 	for _, element := range elements.Elements() {
-		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
-		if key != "" {
-			this.elements.Put(key, element, elements.Notification())
-		}
+		this.elements.Put(element, elements.Notification())
 	}
 }
 
 func (this *InventoryCenter) Patch(elements ifs.IElements) {
 	for _, element := range elements.Elements() {
-		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
-		if key != "" {
-			this.elements.Patch(key, element, elements.Notification())
-		}
+		this.elements.Patch(element, elements.Notification())
 	}
 }
 
 func (this *InventoryCenter) Delete(elements ifs.IElements) {
 	for _, element := range elements.Elements() {
-		key := primaryKeyValue(this.primaryKeyAttribute, element, this.resources)
-		if key != "" {
-			this.elements.Delete(key, elements.Notification())
-		}
+		this.elements.Delete(element, elements.Notification())
 	}
 }
 
@@ -82,13 +72,9 @@ func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
 	return result
 }
 
-func (this *InventoryCenter) ElementByKey(key string) interface{} {
-	return this.elements.Get(key)
-}
-
 func (this *InventoryCenter) ElementByElement(elem interface{}) interface{} {
-	key := primaryKeyValue(this.primaryKeyAttribute, elem, this.resources)
-	return this.elements.Get(key)
+	resp, _ := this.elements.Get(elem)
+	return resp
 }
 
 func Inventory(resource ifs.IResources, serviceName string, serviceArea byte) *InventoryCenter {

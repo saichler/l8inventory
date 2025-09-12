@@ -66,7 +66,7 @@ func TestInventory(t *testing.T) {
 	}
 
 	inventoryCenter := inventory.Inventory(vnic.Resources(), serviceName, serviceArea)
-	elem = inventoryCenter.ElementByKey(elem.MyString).(*testtypes.TestProto)
+	elem = inventoryCenter.ElementByElement(elem).(*testtypes.TestProto)
 	if elem.MyInt64 != 67 || elem.MyInt32 != 13 {
 		vnic.Resources().Logger().Fail(t, "Expected values to match")
 		return
