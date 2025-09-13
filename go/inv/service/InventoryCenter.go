@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"math"
 	"reflect"
 
 	"github.com/saichler/l8services/go/services/dcache"
@@ -62,10 +63,20 @@ func (this *InventoryCenter) Delete(elements ifs.IElements) {
 
 func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
 	result := make([]interface{}, 0)
+	startRec := 0
+	endRec := math.MaxInt
+	if query.Limit() > 0 {
+		startRec = int(query.Page() * query.Limit())
+		endRec = int((query.Page() + 1) * query.Limit())
+	}
+	currRec := 0
 	this.elements.Collect(func(elem interface{}) (bool, interface{}) {
 		match := query.Match(elem)
 		if match {
-			result = append(result, elem)
+			currRec++
+			if currRec >= startRec && currRec <= endRec {
+				result = append(result, elem)
+			}
 		}
 		return match, elem
 	})
