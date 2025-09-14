@@ -1,8 +1,8 @@
 package inventory
 
 import (
-	"math"
 	"reflect"
+	"sync"
 
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
@@ -17,6 +17,9 @@ type InventoryCenter struct {
 	serviceName         string
 	serviceArea         byte
 	element             interface{}
+
+	query    []interface{}
+	queryMtx *sync.RWMutex
 }
 
 func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribute string,
@@ -28,6 +31,8 @@ func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribut
 	this.elementType = reflect.ValueOf(element).Elem().Type()
 	this.resources = resources
 	this.primaryKeyAttribute = primaryKeyAttribute
+	this.queryMtx = &sync.RWMutex{}
+
 	node, _ := resources.Introspector().Inspect(element)
 	introspecting.AddPrimaryKeyDecorator(node, primaryKeyAttribute)
 
@@ -61,29 +66,45 @@ func (this *InventoryCenter) Delete(elements ifs.IElements) {
 	}
 }
 
+func (this *InventoryCenter) shouldPrepareQuery() bool {
+	this.queryMtx.Lock()
+	defer this.queryMtx.Unlock()
+	if this.query == nil || len(this.query) != this.elements.Size() {
+		return true
+	}
+	return false
+}
+
 func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, int32) {
+	if this.shouldPrepareQuery() {
+		localQuery := make([]interface{}, 0)
+		this.elements.Collect(func(elem interface{}) (bool, interface{}) {
+			localQuery = append(localQuery, elem)
+			return true, elem
+		})
+		this.queryMtx.Lock()
+		this.query = localQuery
+		this.queryMtx.Unlock()
+	}
+
 	result := make([]interface{}, 0)
-	startRec := 0
-	endRec := math.MaxInt
-	if query.Limit() > 0 {
-		startRec = int(query.Page() * query.Limit())
-		endRec = int((query.Page() + 1) * query.Limit())
-	}
-	currRec := 0
-	this.elements.Collect(func(elem interface{}) (bool, interface{}) {
-		match := query.Match(elem)
-		if match {
-			currRec++
-			if currRec >= startRec && currRec <= endRec {
-				result = append(result, elem)
-			}
+
+	this.queryMtx.RLock()
+	defer this.queryMtx.RUnlock()
+
+	if query.Limit() == 0 {
+		for _, elem := range this.query {
+			result = append(result, elem)
 		}
-		return match, elem
-	})
-	if query.Limit() > 0 {
-		return result, int32(currRec/int(query.Limit()) + 1)
+		return result, 0
 	}
-	return result, int32(currRec / 25)
+
+	startIndex := int(query.Limit() * query.Page())
+	endIndex := int(query.Limit()*query.Page() + query.Limit()*query.Page() - 1)
+	for i := startIndex; i < endIndex && i < len(this.query); i++ {
+		result = append(result, this.query[i])
+	}
+	return result, int32(len(this.query)/int(query.Limit()) + 1)
 }
 
 func (this *InventoryCenter) ElementByElement(elem interface{}) interface{} {
