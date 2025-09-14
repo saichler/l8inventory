@@ -61,7 +61,7 @@ func (this *InventoryCenter) Delete(elements ifs.IElements) {
 	}
 }
 
-func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
+func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, int32) {
 	result := make([]interface{}, 0)
 	startRec := 0
 	endRec := math.MaxInt
@@ -80,7 +80,10 @@ func (this *InventoryCenter) Get(query ifs.IQuery) []interface{} {
 		}
 		return match, elem
 	})
-	return result
+	if query.Limit() > 0 {
+		return result, int32(currRec/int(query.Limit()) + 1)
+	}
+	return result, int32(currRec / 25)
 }
 
 func (this *InventoryCenter) ElementByElement(elem interface{}) interface{} {

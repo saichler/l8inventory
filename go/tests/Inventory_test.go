@@ -82,6 +82,6 @@ func TestInventory(t *testing.T) {
 		vnic.Resources().Logger().Fail(t, "Unable to create query", e.Error())
 		return
 	}
-	all := inventoryCenter.Get(q)
+	all, _ := inventoryCenter.Get(q)
 	fmt.Println(all)
 }

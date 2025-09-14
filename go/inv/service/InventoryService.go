@@ -109,9 +109,9 @@ func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 	if err != nil {
 		return object.NewError(err.Error())
 	}
-	elems := this.inventoryCenter.Get(query)
+	elems, pages := this.inventoryCenter.Get(query)
 	vnic.Resources().Logger().Info("Get Completed with ", len(elems), " elements for query:")
-	return object.New(nil, elems)
+	return object.NewQueryResult(elems, pages)
 }
 func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
@@ -176,7 +176,7 @@ func (this *InventoryService) isSingleElement(pb ifs.IElements, vnic ifs.IVNic) 
 				if err != nil {
 					panic(gsql + " " + err.Error())
 				}
-				result := this.inventoryCenter.Get(q2)
+				result, _ := this.inventoryCenter.Get(q2)
 				return object.New(nil, result), true
 			}
 		}
