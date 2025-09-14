@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 
@@ -70,6 +71,7 @@ func (this *InventoryCenter) shouldPrepareQuery() bool {
 	this.queryMtx.Lock()
 	defer this.queryMtx.Unlock()
 	if this.query == nil || len(this.query) != this.elements.Size() {
+		fmt.Println("Query length mismatch, recreatng")
 		return true
 	}
 	return false
@@ -77,12 +79,14 @@ func (this *InventoryCenter) shouldPrepareQuery() bool {
 
 func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, int32) {
 	if this.shouldPrepareQuery() {
+		fmt.Println("Prepare query")
 		localQuery := make([]interface{}, 0)
 		this.elements.Collect(func(elem interface{}) (bool, interface{}) {
 			localQuery = append(localQuery, elem)
 			return true, elem
 		})
 		this.queryMtx.Lock()
+		fmt.Println("local query:", len(localQuery))
 		this.query = localQuery
 		this.queryMtx.Unlock()
 	}
@@ -101,6 +105,7 @@ func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, int32) {
 
 	startIndex := int(query.Limit() * query.Page())
 	endIndex := int(query.Limit()*query.Page() + query.Limit()*query.Page() - 1)
+	fmt.Println("Start Index = ", startIndex, " EndIndex = ", endIndex, " len:", len(this.query))
 	for i := startIndex; i < endIndex && i < len(this.query); i++ {
 		result = append(result, this.query[i])
 	}
