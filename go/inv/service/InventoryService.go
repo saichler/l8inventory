@@ -109,9 +109,9 @@ func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 	if err != nil {
 		return object.NewError(err.Error())
 	}
-	elems, pages := this.inventoryCenter.Get(query)
+	elems, stats := this.inventoryCenter.Get(query)
 	vnic.Resources().Logger().Info("Get Completed with ", len(elems), " elements for query:")
-	return object.NewQueryResult(elems, pages)
+	return object.NewQueryResult(elems, stats)
 }
 func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
