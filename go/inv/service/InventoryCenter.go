@@ -104,7 +104,7 @@ func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, int32) {
 	}
 
 	startIndex := int(query.Limit() * query.Page())
-	endIndex := int(query.Limit()*query.Page() + query.Limit()*query.Page() - 1)
+	endIndex := startIndex + int(query.Limit())
 	fmt.Println("Start Index = ", startIndex, " EndIndex = ", endIndex, " len:", len(this.query))
 	for i := startIndex; i < endIndex && i < len(this.query); i++ {
 		result = append(result, this.query[i])
