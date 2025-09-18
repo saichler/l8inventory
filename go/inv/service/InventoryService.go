@@ -3,10 +3,10 @@ package inventory
 import (
 	"reflect"
 
-	
+	"github.com/saichler/l8pollaris/go/types/l8poll"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
-	types2 "github.com/saichler/l8types/go/types"
+	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8utils/go/utils/web"
 	"github.com/saichler/reflect/go/reflect/introspecting"
 	"google.golang.org/protobuf/proto"
@@ -18,7 +18,7 @@ const (
 
 type InventoryService struct {
 	inventoryCenter *InventoryCenter
-	forwardService  *types.DeviceServiceInfo
+	forwardService  *l8poll.L8ServiceInfo
 	nic             ifs.IVNic
 	serviceName     string
 	serviceArea     byte
@@ -32,7 +32,7 @@ func (this *InventoryService) Activate(serviceName string, serviceArea byte,
 	primaryKey := args[0].(string)
 	this.inventoryCenter = newInventoryCenter(serviceName, serviceArea, primaryKey, args[1], r, l)
 	if len(args) == 3 {
-		this.forwardService = args[2].(*types.DeviceServiceInfo)
+		this.forwardService = args[2].(*l8poll.L8ServiceInfo)
 		this.nic = l.(ifs.IVNic)
 		this.nic.RegisterServiceBatch(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.M_Leader, 5)
 		r.Logger().Info("Added forwarding to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
@@ -41,7 +41,7 @@ func (this *InventoryService) Activate(serviceName string, serviceArea byte,
 	this.serviceArea = serviceArea
 	this.itemSample = args[1]
 	this.itemSampleList = ItemListType(r.Registry(), this.itemSample)
-	r.Registry().Register(&types2.Query{})
+	r.Registry().Register(&l8api.L8Query{})
 	return nil
 }
 
@@ -139,7 +139,7 @@ func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResou
 func (this *InventoryService) WebService() ifs.IWebService {
 	ws := web.New(this.serviceName, this.serviceArea, nil,
 		nil, nil, nil, nil, nil, nil, nil,
-		&types2.Query{}, this.itemSampleList)
+		&l8api.L8Query{}, this.itemSampleList)
 	return ws
 }
 

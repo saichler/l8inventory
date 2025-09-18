@@ -7,7 +7,8 @@ import (
 
 	inventory "github.com/saichler/l8inventory/go/inv/service"
 	"github.com/saichler/l8inventory/go/tests/utils_inventory"
-	
+	"github.com/saichler/l8pollaris/go/types/l8poll"
+
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
@@ -20,7 +21,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestInventory(t *testing.T) {
-	forwardInfo := &types.DeviceServiceInfo{}
+	forwardInfo := &l8poll.L8ServiceInfo{}
 	forwardInfo.ServiceName = "MockOrm"
 	forwardInfo.ServiceArea = 0
 	serviceName := "inventory"

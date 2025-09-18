@@ -3,7 +3,7 @@ package utils_inventory
 import (
 	"sync"
 
-	
+	"github.com/saichler/l8pollaris/go/types/l8poll"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 )
@@ -20,7 +20,7 @@ type MockOrmService struct {
 
 func (this *MockOrmService) Activate(serviceName string, serviceArea byte,
 	r ifs.IResources, l ifs.IServiceCacheListener, args ...interface{}) error {
-	r.Registry().Register(&types.CJob{})
+	r.Registry().Register(&l8poll.CJob{})
 	this.mtx = &sync.Mutex{}
 	return nil
 }
