@@ -6,7 +6,7 @@ import (
 
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/probler/go/types"
-	"github.com/saichler/reflect/go/reflect/introspecting"
+	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
