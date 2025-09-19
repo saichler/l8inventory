@@ -7,7 +7,7 @@ import (
 
 	inventory "github.com/saichler/l8inventory/go/inv/service"
 	"github.com/saichler/l8inventory/go/tests/utils_inventory"
-	"github.com/saichler/l8pollaris/go/types/l8poll"
+	"github.com/saichler/l8types/go/types/l8services"
 
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
@@ -21,9 +21,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestInventory(t *testing.T) {
-	forwardInfo := &l8poll.L8ServiceInfo{}
-	forwardInfo.ServiceName = "MockOrm"
-	forwardInfo.ServiceArea = 0
+	forwardInfo := &l8services.L8ServiceLink{}
+	forwardInfo.ZsideServiceName = "MockOrm"
+	forwardInfo.ZsideServiceArea = 0
 	serviceName := "inventory"
 	serviceArea := byte(0)
 	primaryKey := "MyString"
@@ -36,7 +36,7 @@ func TestInventory(t *testing.T) {
 		primaryKey, elemType, forwardInfo)
 	vnic.Resources().Registry().Register(&utils_inventory.MockOrmService{})
 	vnic.Resources().Services().Activate(utils_inventory.ServiceType,
-		forwardInfo.ServiceName, byte(forwardInfo.ServiceArea), vnic.Resources(), vnic)
+		forwardInfo.ZsideServiceName, byte(forwardInfo.ZsideServiceArea), vnic.Resources(), vnic)
 
 	time.Sleep(time.Second)
 
@@ -45,7 +45,7 @@ func TestInventory(t *testing.T) {
 
 	time.Sleep(time.Second * 5)
 
-	m, ok := vnic.Resources().Services().ServiceHandler(forwardInfo.ServiceName, byte(forwardInfo.ServiceArea))
+	m, ok := vnic.Resources().Services().ServiceHandler(forwardInfo.ZsideServiceName, byte(forwardInfo.ZsideServiceArea))
 	if !ok {
 		vnic.Resources().Logger().Fail(t, "Cannot find mock service")
 		return

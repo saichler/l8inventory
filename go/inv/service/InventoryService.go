@@ -3,10 +3,10 @@ package inventory
 import (
 	"reflect"
 
-	"github.com/saichler/l8pollaris/go/types/l8poll"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
+	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8utils/go/utils/web"
 	"github.com/saichler/reflect/go/reflect/introspecting"
 	"google.golang.org/protobuf/proto"
@@ -18,7 +18,7 @@ const (
 
 type InventoryService struct {
 	inventoryCenter *InventoryCenter
-	forwardService  *l8poll.L8ServiceInfo
+	link            *l8services.L8ServiceLink
 	nic             ifs.IVNic
 	serviceName     string
 	serviceArea     byte
@@ -32,10 +32,10 @@ func (this *InventoryService) Activate(serviceName string, serviceArea byte,
 	primaryKey := args[0].(string)
 	this.inventoryCenter = newInventoryCenter(serviceName, serviceArea, primaryKey, args[1], r, l)
 	if len(args) == 3 {
-		this.forwardService = args[2].(*l8poll.L8ServiceInfo)
+		this.link = args[2].(*l8services.L8ServiceLink)
 		this.nic = l.(ifs.IVNic)
-		this.nic.RegisterServiceBatch(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.M_Leader, 5)
-		r.Logger().Info("Added forwarding to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
+		this.nic.RegisterServiceLink(this.link)
+		r.Logger().Info("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
 	}
 	this.serviceName = serviceName
 	this.serviceArea = serviceArea
@@ -52,11 +52,10 @@ func (this *InventoryService) DeActivate() error {
 
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Post(elements)
-	if !elements.Notification() && this.forwardService != nil {
+	if !elements.Notification() && this.link != nil {
 		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Post to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
-			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.POST, elem, 30)
+			vnic.Resources().Logger().Debug("Forawrding Post to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.POST, elements, 30)
 		}()
 	}
 	return object.New(nil, this.itemSampleList)
@@ -64,11 +63,10 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 
 func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Put(elements)
-	if !elements.Notification() && this.forwardService != nil {
+	if !elements.Notification() && this.link != nil {
 		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Put to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
-			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PUT, elem, 30)
+			vnic.Resources().Logger().Debug("Forawrding Put to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PUT, elements, 30)
 		}()
 	}
 	return object.New(nil, this.itemSampleList)
@@ -76,11 +74,10 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Patch(elements)
-	if !elements.Notification() && this.forwardService != nil {
+	if !elements.Notification() && this.link != nil {
 		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Patch to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
-			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.PATCH, elem, 30)
+			vnic.Resources().Logger().Debug("Forawrding Patch to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PATCH, elements, 30)
 		}()
 	}
 	return object.New(nil, this.itemSampleList)
@@ -88,15 +85,15 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 
 func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Delete(elements)
-	if !elements.Notification() && this.forwardService != nil {
+	if !elements.Notification() && this.link != nil {
 		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Delete to ", this.forwardService.ServiceName, " area ", this.forwardService.ServiceArea)
-			elem := this.inventoryCenter.ElementByElement(elements.Element())
-			this.nic.LeaderRequest(this.forwardService.ServiceName, byte(this.forwardService.ServiceArea), ifs.DELETE, elem, 30)
+			vnic.Resources().Logger().Debug("Forawrding Delete to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.DELETE, elements, 30)
 		}()
 	}
 	return object.New(nil, this.itemSampleList)
 }
+
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	vnic.Resources().Logger().Info("Get Executed...")
 
@@ -113,6 +110,7 @@ func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 	vnic.Resources().Logger().Info("Get Completed with ", len(elems), " elements for query:")
 	return object.NewQueryResult(elems, stats)
 }
+
 func (this *InventoryService) GetCopy(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	return nil
 }
