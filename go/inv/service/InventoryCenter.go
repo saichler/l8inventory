@@ -3,9 +3,9 @@ package inventory
 import (
 	"reflect"
 
+	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
-	"github.com/saichler/l8reflect/go/reflect/introspecting"
 )
 
 type InventoryCenter struct {
@@ -62,7 +62,7 @@ func (this *InventoryCenter) Delete(elements ifs.IElements) {
 }
 
 func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, map[string]int32) {
-	result := this.elements.Fetch(int(query.Page()), int(query.Limit()))
+	result := this.elements.Fetch(int(query.Page()*query.Limit()), int(query.Limit()))
 	return result, this.elements.Stats()
 }
 
