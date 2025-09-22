@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/probler/go/types"
-	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -15,7 +15,7 @@ func TestQuery(t *testing.T) {
 	node, _ := nic.Resources().Introspector().Inspect(&types.NetworkDevice{})
 	introspecting.AddPrimaryKeyDecorator(node, "Id")
 
-	elem, err := object.NewQuery("select * from NetworkDevice where Id=* limit 5 page 2", nic.Resources())
+	elem, err := object.NewQuery("select * from NetworkDevice limit 5 page 2", nic.Resources())
 	if err != nil {
 		t.Error(err)
 		t.Fail()

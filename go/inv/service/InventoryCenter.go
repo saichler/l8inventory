@@ -62,7 +62,7 @@ func (this *InventoryCenter) Delete(elements ifs.IElements) {
 }
 
 func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, map[string]int32) {
-	result := this.elements.Fetch(int(query.Page()*query.Limit()), int(query.Limit()))
+	result := this.elements.Fetch(int(query.Page()*query.Limit()), int(query.Limit()), query)
 	return result, this.elements.Stats()
 }
 
