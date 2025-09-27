@@ -1,25 +1,28 @@
-# l8inventory
+# Layer 8 Agnostic Distributed Cache (l8inventory)
 
-A generic and model-agnostic distributed inventory cache for collected and parsed data, built on the Layer 8 ecosystem. This service provides a distributed caching layer for network devices, Kubernetes resources, and other infrastructure inventory data.
+A high-performance, generic and model-agnostic distributed inventory cache for collected and parsed data, built on the Layer 8 ecosystem. This service provides an advanced distributed caching layer for network devices, Kubernetes resources, and other infrastructure inventory data with enhanced query performance and robust filtering capabilities.
 
 ## Overview
 
-l8inventory is a distributed inventory management system that serves as a cache for collected and parsed infrastructure data. It is designed to be:
+l8inventory is a high-performance distributed inventory management system that serves as a cache for collected and parsed infrastructure data. With recent performance optimizations and enhanced filtering capabilities, it is designed to be:
 
 - **Generic**: Works with any data model through Protocol Buffers definitions
 - **Model Agnostic**: Supports multiple inventory types (network devices, Kubernetes resources, etc.)
-- **Distributed**: Built on the Layer 8 ecosystem for distributed operations
-- **Query-enabled**: Supports SQL-like queries for data retrieval
+- **Distributed**: Built on the Layer 8 ecosystem for distributed operations with service link support
+- **Query-enabled**: Enhanced SQL-like queries with improved performance and advanced filtering
+- **High Performance**: Optimized query engine with efficient filtering and fetch operations
 
 ## Features
 
 - **Multi-Model Support**: Handle network devices, Kubernetes resources, and custom inventory types
-- **Distributed Caching**: Uses Layer 8's distributed cache infrastructure
-- **Query Interface**: SQL-like query capabilities for flexible data retrieval
-- **Real-time Updates**: Support for POST, PATCH operations with notifications
+- **Distributed Caching**: Uses Layer 8's distributed cache infrastructure with enhanced sync capabilities
+- **Query Interface**: Optimized SQL-like query capabilities with improved performance and advanced filtering
+- **Real-time Updates**: Support for POST, PATCH operations with notifications and service linking
 - **Primary Key Management**: Configurable primary key attributes for different data types
-- **Forwarding Support**: Optional forwarding to downstream services
-- **Web Service Interface**: REST API endpoints for external integration
+- **Forwarding Support**: Enhanced forwarding to downstream services with service link architecture
+- **Web Service Interface**: Comprehensive REST API endpoints for external integration
+- **Performance Optimized**: Recent improvements to query performance, filtering, and fetch operations
+- **Advanced Statistics**: Built-in statistics collection for monitoring and performance analysis
 
 ## Architecture
 
@@ -70,12 +73,16 @@ The project uses several Layer 8 ecosystem modules:
 
 ```go
 require (
-    github.com/saichler/l8pollaris v0.0.0-20250812122124-0d61ae6406f1
-    github.com/saichler/l8services v0.0.0-20250814124532-c9571383e946
-    github.com/saichler/l8srlz v0.0.0-20250811191234-68e7ff173a67
-    github.com/saichler/l8test v0.0.0-20250707204928-31f1e3adcf25
-    github.com/saichler/l8types v0.0.0-20250814231453-a93cb9362f14
-    // ... additional dependencies
+    github.com/saichler/l8bus v0.0.0-20250919233512-9318eab49cf0
+    github.com/saichler/l8pollaris v0.0.0-20250922033843-6e532b25a082
+    github.com/saichler/l8reflect v0.0.0-20250919234124-8174370f2112
+    github.com/saichler/l8services v0.0.0-20250922141647-36d02dfc3f48
+    github.com/saichler/l8srlz v0.0.0-20250919234228-5bb968906922
+    github.com/saichler/l8test v0.0.0-20250919233411-36e9f6dc3434
+    github.com/saichler/l8types v0.0.0-20250922141405-0e75bd0b244a
+    github.com/saichler/l8utils v0.0.0-20250918011151-3bbbe0b545ed
+    github.com/saichler/probler v0.0.0-20250922022446-c29b793f9262
+    google.golang.org/protobuf v1.36.9
 )
 ```
 

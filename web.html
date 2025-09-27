@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>l8inventory - Distributed Inventory Cache</title>
+    <title>Layer 8 Agnostic Distributed Cache</title>
     <style>
         * {
             margin: 0;
@@ -15,8 +15,9 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             line-height: 1.6;
             color: #333;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2196F3 0%, #00BCD4 100%);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
@@ -44,7 +45,7 @@
         .logo {
             font-size: 1.8rem;
             font-weight: bold;
-            color: #667eea;
+            color: #FF5722;
         }
 
         .nav-links {
@@ -61,13 +62,19 @@
         }
 
         .nav-links a:hover {
-            color: #667eea;
+            color: #FF5722;
         }
 
         .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            padding: 5rem 0;
             color: white;
+            position: relative;
+            background: linear-gradient(135deg, #2196F3 0%, #00BCD4 100%);
+            background-attachment: fixed;
         }
 
         .hero h1 {
@@ -85,8 +92,8 @@
 
         .cta-button {
             display: inline-block;
-            background: #fff;
-            color: #667eea;
+            background: #FF5722;
+            color: white;
             padding: 1rem 2rem;
             border-radius: 50px;
             text-decoration: none;
@@ -159,8 +166,14 @@
             background: white;
             padding: 1.5rem;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #4CAF50;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .arch-component:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
         .code-block {
@@ -227,12 +240,147 @@
                 gap: 1rem;
             }
         }
+
+        /* Parallax and Custom Illustrations */
+        .parallax-container {
+            height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+            perspective: 1px;
+        }
+
+        .parallax-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+        }
+
+        .parallax-background {
+            transform: translateZ(-1px) scale(2);
+        }
+
+        .parallax-midground {
+            transform: translateZ(-0.5px) scale(1.5);
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .shape {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .shape.circle {
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FF5722, #FFC107);
+        }
+
+        .shape.triangle {
+            width: 0;
+            height: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+            border-bottom: 52px solid #4CAF50;
+            background: none;
+        }
+
+        .shape.hexagon {
+            width: 60px;
+            height: 34.64px;
+            background: #2196F3;
+            position: relative;
+            margin: 17.32px 0;
+        }
+
+        .shape.hexagon:before,
+        .shape.hexagon:after {
+            content: "";
+            position: absolute;
+            width: 0;
+            border-left: 30px solid transparent;
+            border-right: 30px solid transparent;
+        }
+
+        .shape.hexagon:before {
+            bottom: 100%;
+            border-bottom: 17.32px solid #2196F3;
+        }
+
+        .shape.hexagon:after {
+            top: 100%;
+            border-top: 17.32px solid #2196F3;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-30px) rotate(120deg); }
+            66% { transform: translateY(30px) rotate(240deg); }
+        }
+
+        .data-flow-animation {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FF5722, transparent);
+            animation: dataFlow 3s infinite;
+        }
+
+        @keyframes dataFlow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .performance-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(76, 175, 80, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            margin: 0.5rem;
+            border: 1px solid #4CAF50;
+        }
+
+        .performance-indicator::before {
+            content: "⚡";
+            margin-right: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-enhancement {
+            background: linear-gradient(135deg, rgba(255, 87, 34, 0.1), rgba(255, 193, 7, 0.1));
+            border: 1px solid #FF5722;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-10px); }
+            60% { transform: translateX(-50%) translateY(-5px); }
+        }
     </style>
 </head>
 <body>
     <header>
         <nav class="container">
-            <div class="logo">l8inventory</div>
+            <div class="logo">Layer 8 Cache</div>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#architecture">Architecture</a></li>
@@ -244,10 +392,28 @@
     </header>
 
     <section class="hero">
+        <div class="floating-shapes">
+            <div class="shape circle" style="width: 80px; height: 80px; top: 20%; left: 10%; animation-delay: 0s;"></div>
+            <div class="shape hexagon" style="top: 60%; left: 15%; animation-delay: 5s;"></div>
+            <div class="shape triangle" style="top: 30%; right: 20%; animation-delay: 10s;"></div>
+            <div class="shape circle" style="width: 60px; height: 60px; top: 70%; right: 10%; animation-delay: 15s;"></div>
+            <div class="shape hexagon" style="top: 40%; left: 80%; animation-delay: 3s;"></div>
+            <div class="shape triangle" style="top: 80%; left: 70%; animation-delay: 8s;"></div>
+        </div>
+        <div class="data-flow-animation"></div>
         <div class="container">
-            <h1>l8inventory</h1>
-            <p>A generic and model-agnostic distributed inventory cache for collected and parsed data</p>
+            <h1>Layer 8 Agnostic Distributed Cache</h1>
+            <p>High-performance, model-agnostic distributed inventory cache with enhanced query performance and advanced filtering capabilities</p>
+            <div style="margin: 2rem 0;">
+                <span class="performance-indicator">Query Performance Optimized</span>
+                <span class="performance-indicator feature-enhancement">Service Link Support</span>
+                <span class="performance-indicator">Advanced Filtering</span>
+            </div>
             <a href="#installation" class="cta-button">Get Started</a>
+        </div>
+        <div class="scroll-indicator">
+            <div style="font-size: 2rem;">↓</div>
+            <div>Scroll to explore</div>
         </div>
     </section>
 
@@ -263,27 +429,37 @@
                 <div class="feature-card">
                     <div class="feature-icon">🌐</div>
                     <h3>Distributed Architecture</h3>
-                    <p>Built on the Layer 8 ecosystem for distributed operations with robust caching infrastructure.</p>
+                    <p>Built on the Layer 8 ecosystem for distributed operations with enhanced service link support and robust caching infrastructure.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🔍</div>
-                    <h3>Advanced Querying</h3>
-                    <p>SQL-like query capabilities for flexible data retrieval with real-time updates and notifications.</p>
+                    <h3>Performance Optimized Querying</h3>
+                    <p>Enhanced SQL-like query capabilities with significant performance improvements, advanced filtering, and optimized fetch operations.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">⚡</div>
                     <h3>Real-time Operations</h3>
-                    <p>Support for POST, PATCH operations with immediate notifications and configurable primary key management.</p>
+                    <p>Support for POST, PATCH operations with immediate notifications, service linking, and configurable primary key management.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">🔗</div>
-                    <h3>REST API Interface</h3>
-                    <p>Complete web service interface with REST API endpoints for seamless external integration.</p>
+                    <h3>Enhanced REST API</h3>
+                    <p>Complete web service interface with improved REST API endpoints and advanced integration capabilities for external systems.</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📡</div>
-                    <h3>Forwarding Support</h3>
-                    <p>Optional forwarding to downstream services for complex data processing pipelines.</p>
+                    <h3>Advanced Forwarding</h3>
+                    <p>Enhanced forwarding support to downstream services with service link architecture for complex data processing pipelines.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Built-in Statistics</h3>
+                    <p>Comprehensive statistics collection and monitoring capabilities for performance analysis and system health tracking.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Filter Optimization</h3>
+                    <p>Recent filter improvements and fetch optimizations providing faster data retrieval and more efficient query processing.</p>
                 </div>
             </div>
         </div>
@@ -418,5 +594,74 @@ vnic.Resources().Services().Activate(
             <p>&copy; 2025 l8inventory. Licensed under Apache License 2.0. Part of the Layer 8 ecosystem.</p>
         </div>
     </footer>
+
+    <script>
+        // Parallax scrolling effect
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.floating-shapes, .data-flow-animation');
+
+            parallaxElements.forEach(function(element) {
+                const speed = 0.5;
+                element.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+
+            // Header background opacity change on scroll
+            const header = document.querySelector('header');
+            const opacity = Math.min(scrolled / 100, 0.95);
+            header.style.background = `rgba(255, 255, 255, ${opacity})`;
+            header.style.backdropFilter = `blur(${Math.min(scrolled / 10, 10)}px)`;
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Observe feature cards and architecture components
+        document.querySelectorAll('.feature-card, .arch-component').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(card);
+        });
+
+        // Dynamic data flow animation
+        setInterval(function() {
+            const dataFlow = document.querySelector('.data-flow-animation');
+            if (dataFlow) {
+                dataFlow.style.background = `linear-gradient(90deg, transparent, ${getRandomColor()}, transparent)`;
+            }
+        }, 3000);
+
+        function getRandomColor() {
+            const colors = ['#FF5722', '#4CAF50', '#2196F3', '#FFC107'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+    </script>
 </body>
 </html>
