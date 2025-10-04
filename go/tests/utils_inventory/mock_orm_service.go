@@ -20,7 +20,7 @@ type MockOrmService struct {
 
 func (this *MockOrmService) Activate(serviceName string, serviceArea byte,
 	r ifs.IResources, l ifs.IServiceCacheListener, args ...interface{}) error {
-	r.Registry().Register(&l8poll.CJob{})
+	r.Registry().Register(&l8tpollaris.CJob{})
 	this.mtx = &sync.Mutex{}
 	return nil
 }
