@@ -32,7 +32,7 @@ func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribut
 	introspecting.AddPrimaryKeyDecorator(node, primaryKeyAttribute)
 
 	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, nil,
-		listener, resources)
+		nil, resources)
 
 	return this
 }

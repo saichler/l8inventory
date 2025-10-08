@@ -3,12 +3,12 @@ package inventory
 import (
 	"reflect"
 
+	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8utils/go/utils/web"
-	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -118,7 +118,7 @@ func (this *InventoryService) Failed(pb ifs.IElements, vnic ifs.IVNic, msg *ifs.
 	return nil
 }
 func (this *InventoryService) TransactionConfig() ifs.ITransactionConfig {
-	return nil
+	return this
 }
 
 func (this *InventoryService) Replication() bool {
@@ -128,7 +128,7 @@ func (this *InventoryService) ReplicationCount() int {
 	return 0
 }
 func (this *InventoryService) ConcurrentGets() bool {
-	return false
+	return true
 }
 func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResources) string {
 	return ""
