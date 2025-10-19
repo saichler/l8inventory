@@ -18,21 +18,20 @@ type InventoryCenter struct {
 	element             interface{}
 }
 
-func newInventoryCenter(serviceName string, serviceArea byte, primaryKeyAttribute string,
-	element interface{}, resources ifs.IResources, listener ifs.IServiceCacheListener) *InventoryCenter {
+func newInventoryCenter(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) *InventoryCenter {
 	this := &InventoryCenter{}
-	this.serviceName = serviceName
-	this.serviceArea = serviceArea
-	this.element = element
-	this.elementType = reflect.ValueOf(element).Elem().Type()
-	this.resources = resources
-	this.primaryKeyAttribute = primaryKeyAttribute
+	this.serviceName = sla.ServiceName()
+	this.serviceArea = sla.ServiceArea()
+	this.element = sla.ServiceItem()
+	this.elementType = reflect.ValueOf(this.element).Elem().Type()
+	this.resources = vnic.Resources()
+	this.primaryKeyAttribute = sla.PrimaryKeys()[0]
 
-	node, _ := resources.Introspector().Inspect(element)
-	introspecting.AddPrimaryKeyDecorator(node, primaryKeyAttribute)
+	node, _ := this.resources.Introspector().Inspect(this.element)
+	introspecting.AddPrimaryKeyDecorator(node, this.primaryKeyAttribute)
 
 	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, nil,
-		nil, resources)
+		nil, this.resources)
 
 	return this
 }

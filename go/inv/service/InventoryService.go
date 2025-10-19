@@ -4,6 +4,8 @@ import (
 	"reflect"
 
 	"github.com/saichler/l8reflect/go/reflect/introspecting"
+	"github.com/saichler/l8services/go/services/dcache"
+	"github.com/saichler/l8services/go/services/recovery"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
@@ -26,22 +28,25 @@ type InventoryService struct {
 	itemSampleList  proto.Message
 }
 
-func (this *InventoryService) Activate(serviceName string, serviceArea byte,
-	r ifs.IResources, l ifs.IServiceCacheListener, args ...interface{}) error {
-	r.Logger().Info("Activated Inventory on ", serviceName, " area ", serviceArea)
-	primaryKey := args[0].(string)
-	this.inventoryCenter = newInventoryCenter(serviceName, serviceArea, primaryKey, args[1], r, l)
-	if len(args) == 3 {
-		this.link = args[2].(*l8services.L8ServiceLink)
-		this.nic = l.(ifs.IVNic)
+func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) error {
+	vnic.Resources().Logger().Info("Activated Inventory on ", sla.ServiceName(), " area ", sla.ServiceArea())
+	this.inventoryCenter = newInventoryCenter(sla, vnic)
+	if len(sla.Args()) == 1 {
+		this.link = sla.Args()[0].(*l8services.L8ServiceLink)
+		this.nic = vnic
 		this.nic.RegisterServiceLink(this.link)
-		r.Logger().Info("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+		vnic.Resources().Logger().Info("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
 	}
-	this.serviceName = serviceName
-	this.serviceArea = serviceArea
-	this.itemSample = args[1]
-	this.itemSampleList = ItemListType(r.Registry(), this.itemSample)
-	r.Registry().Register(&l8api.L8Query{})
+	this.serviceName = sla.ServiceName()
+	this.serviceArea = sla.ServiceArea()
+	this.itemSample = sla.ServiceItem()
+	this.itemSampleList = sla.ServiceItemList().(proto.Message)
+	vnic.Resources().Registry().Register(&l8api.L8Query{})
+
+	c := this.inventoryCenter.elements.(*dcache.DCache).Cache()
+
+	recovery.RecoveryCheck(this.serviceName, this.serviceArea, c, vnic)
+
 	return nil
 }
 
@@ -127,7 +132,7 @@ func (this *InventoryService) Replication() bool {
 func (this *InventoryService) ReplicationCount() int {
 	return 0
 }
-func (this *InventoryService) ConcurrentGets() bool {
+func (this *InventoryService) Voter() bool {
 	return true
 }
 func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResources) string {

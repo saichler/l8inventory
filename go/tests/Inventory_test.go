@@ -28,15 +28,20 @@ func TestInventory(t *testing.T) {
 	serviceArea := byte(0)
 	primaryKey := "MyString"
 	elemType := &testtypes.TestProto{}
+	elemTypeList := &testtypes.TestProtoList{}
 	elem := &testtypes.TestProto{MyString: "Hello World", MyInt64: 67}
 
 	vnic := topo.VnicByVnetNum(2, 2)
-	vnic.Resources().Registry().Register(&inventory.InventoryService{})
-	vnic.Resources().Services().Activate(inventory.ServiceType, serviceName, serviceArea, vnic.Resources(), vnic,
-		primaryKey, elemType, forwardInfo)
-	vnic.Resources().Registry().Register(&utils_inventory.MockOrmService{})
-	vnic.Resources().Services().Activate(utils_inventory.ServiceType,
-		forwardInfo.ZsideServiceName, byte(forwardInfo.ZsideServiceArea), vnic.Resources(), vnic)
+	sla := ifs.NewServiceLevelAgreement(&inventory.InventoryService{}, serviceName, serviceArea, true, nil)
+	sla.SetServiceItem(elemType)
+	sla.SetServiceItemList(elemTypeList)
+	sla.SetArgs(forwardInfo)
+	sla.SetPrimaryKeys([]string{primaryKey})
+	vnic.Resources().Services().Activate(sla, vnic)
+
+	sla = ifs.NewServiceLevelAgreement(&utils_inventory.MockOrmService{}, forwardInfo.ZsideServiceName,
+		byte(forwardInfo.ZsideServiceArea), false, nil)
+	vnic.Resources().Services().Activate(sla, vnic)
 
 	time.Sleep(time.Second)
 

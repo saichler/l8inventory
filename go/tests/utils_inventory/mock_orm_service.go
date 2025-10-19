@@ -18,9 +18,8 @@ type MockOrmService struct {
 	mtx        *sync.Mutex
 }
 
-func (this *MockOrmService) Activate(serviceName string, serviceArea byte,
-	r ifs.IResources, l ifs.IServiceCacheListener, args ...interface{}) error {
-	r.Registry().Register(&l8tpollaris.CJob{})
+func (this *MockOrmService) Activate(sla *ifs.ServiceLevelAgreement, nic ifs.IVNic) error {
+	nic.Resources().Registry().Register(&l8tpollaris.CJob{})
 	this.mtx = &sync.Mutex{}
 	return nil
 }
