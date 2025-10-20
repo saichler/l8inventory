@@ -36,7 +36,7 @@ func TestInventory(t *testing.T) {
 	sla.SetServiceItem(elemType)
 	sla.SetServiceItemList(elemTypeList)
 	sla.SetArgs(forwardInfo)
-	sla.SetPrimaryKeys([]string{primaryKey})
+	sla.SetPrimaryKeys(primaryKey)
 	vnic.Resources().Services().Activate(sla, vnic)
 
 	sla = ifs.NewServiceLevelAgreement(&utils_inventory.MockOrmService{}, forwardInfo.ZsideServiceName,
