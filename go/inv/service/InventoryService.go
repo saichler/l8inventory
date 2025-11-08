@@ -58,10 +58,7 @@ func (this *InventoryService) DeActivate() error {
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Post(elements)
 	if !elements.Notification() && this.link != nil {
-		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Post to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
-			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.POST, elements, 30)
-		}()
+		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.POST, elements)
 	}
 	return object.New(nil, this.itemSampleList)
 }
@@ -69,10 +66,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Put(elements)
 	if !elements.Notification() && this.link != nil {
-		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Put to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
-			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PUT, elements, 30)
-		}()
+		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PUT, elements)
 	}
 	return object.New(nil, this.itemSampleList)
 }
@@ -80,10 +74,7 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Patch(elements)
 	if !elements.Notification() && this.link != nil {
-		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Patch to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
-			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PATCH, elements, 30)
-		}()
+		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PATCH, elements)
 	}
 	return object.New(nil, this.itemSampleList)
 }
@@ -91,10 +82,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Delete(elements)
 	if !elements.Notification() && this.link != nil {
-		go func() {
-			vnic.Resources().Logger().Debug("Forawrding Delete to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
-			this.nic.LeaderRequest(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.DELETE, elements, 30)
-		}()
+		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.DELETE, elements)
 	}
 	return object.New(nil, this.itemSampleList)
 }
