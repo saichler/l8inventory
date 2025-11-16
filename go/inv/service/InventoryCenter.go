@@ -6,6 +6,7 @@ import (
 	"github.com/saichler/l8reflect/go/reflect/introspecting"
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
+	"github.com/saichler/l8types/go/types/l8api"
 )
 
 type InventoryCenter struct {
@@ -60,9 +61,8 @@ func (this *InventoryCenter) Delete(elements ifs.IElements) {
 	}
 }
 
-func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, map[string]int32) {
-	result := this.elements.Fetch(int(query.Page()*query.Limit()), int(query.Limit()), query)
-	return result, this.elements.Stats()
+func (this *InventoryCenter) Get(query ifs.IQuery) ([]interface{}, *l8api.L8MetaData) {
+	return this.elements.Fetch(int(query.Page()*query.Limit()), int(query.Limit()), query)
 }
 
 func (this *InventoryCenter) ElementByElement(elem interface{}) interface{} {
@@ -70,8 +70,8 @@ func (this *InventoryCenter) ElementByElement(elem interface{}) interface{} {
 	return resp
 }
 
-func (this *InventoryCenter) AddStats(name string, f func(interface{}) bool) {
-	this.elements.AddStatFunc(name, f)
+func (this *InventoryCenter) AddMetadata(name string, f func(interface{}) (bool, string)) {
+	this.elements.AddMetadataFunc(name, f)
 }
 
 func Inventory(resource ifs.IResources, serviceName string, serviceArea byte) *InventoryCenter {
