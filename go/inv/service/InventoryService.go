@@ -3,7 +3,7 @@ package inventory
 import (
 	"reflect"
 
-	"github.com/saichler/l8reflect/go/reflect/introspecting"
+	"github.com/saichler/l8reflect/go/reflect/helping"
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8services/go/services/recovery"
 	"github.com/saichler/l8srlz/go/serialize/object"
@@ -156,7 +156,7 @@ func (this *InventoryService) isSingleElement(pb ifs.IElements, vnic ifs.IVNic) 
 		if aside == bside {
 			rnode, ok := vnic.Resources().Introspector().NodeByTypeName(bside)
 			if ok {
-				fields := introspecting.PrimaryKeyDecorator(rnode).([]string)
+				fields := helping.PrimaryKeyDecorator(rnode).([]string)
 				v := reflect.ValueOf(ins).Elem().FieldByName(fields[0])
 				gsql := "select * from " + bside + " where " + fields[0] + "=" + v.String()
 				q1, err := object.NewQuery(gsql, vnic.Resources())
