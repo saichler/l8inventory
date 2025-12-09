@@ -3,7 +3,6 @@ package inventory
 import (
 	"reflect"
 
-	"github.com/saichler/l8reflect/go/reflect/helping"
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
@@ -28,8 +27,7 @@ func newInventoryCenter(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) *Invento
 	this.resources = vnic.Resources()
 	this.primaryKeyAttribute = sla.PrimaryKeys()[0]
 
-	node, _ := this.resources.Introspector().Inspect(this.element)
-	helping.AddPrimaryKeyDecorator(node, this.primaryKeyAttribute)
+	vnic.Resources().Introspector().Decorators().AddPrimaryKeyDecorator(this.element, this.primaryKeyAttribute)
 
 	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, nil,
 		nil, this.resources)

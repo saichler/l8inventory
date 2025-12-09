@@ -3,12 +3,12 @@ package inventory
 import (
 	"reflect"
 
-	"github.com/saichler/l8reflect/go/reflect/helping"
 	"github.com/saichler/l8services/go/services/dcache"
 	"github.com/saichler/l8services/go/services/recovery"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
+	"github.com/saichler/l8types/go/types/l8reflect"
 	"github.com/saichler/l8types/go/types/l8services"
 	"github.com/saichler/l8utils/go/utils/web"
 	"google.golang.org/protobuf/proto"
@@ -154,9 +154,9 @@ func (this *InventoryService) isSingleElement(pb ifs.IElements, vnic ifs.IVNic) 
 		aside := reflect.ValueOf(ins).Elem().Type().Name()
 		bside := reflect.ValueOf(this.itemSample).Elem().Type().Name()
 		if aside == bside {
-			rnode, ok := vnic.Resources().Introspector().NodeByTypeName(bside)
-			if ok {
-				fields := helping.PrimaryKeyDecorator(rnode).([]string)
+			rnode, ok1 := vnic.Resources().Introspector().NodeByTypeName(bside)
+			if ok1 {
+				fields, _ := vnic.Resources().Introspector().Decorators().Fields(rnode, l8reflect.L8DecoratorType_Primary)
 				v := reflect.ValueOf(ins).Elem().FieldByName(fields[0])
 				gsql := "select * from " + bside + " where " + fields[0] + "=" + v.String()
 				q1, err := object.NewQuery(gsql, vnic.Resources())
