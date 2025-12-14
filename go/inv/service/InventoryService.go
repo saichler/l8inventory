@@ -3,8 +3,6 @@ package inventory
 import (
 	"reflect"
 
-	"github.com/saichler/l8services/go/services/dcache"
-	"github.com/saichler/l8services/go/services/recovery"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
@@ -14,21 +12,15 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const (
-	ServiceType = "InventoryService"
-)
-
 type InventoryService struct {
 	inventoryCenter *InventoryCenter
 	link            *l8services.L8ServiceLink
 	nic             ifs.IVNic
-	serviceName     string
-	serviceArea     byte
-	itemSample      interface{}
-	itemSampleList  proto.Message
+	sla             *ifs.ServiceLevelAgreement
 }
 
 func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) error {
+	this.sla = sla
 	vnic.Resources().Logger().Info("Activated Inventory on ", sla.ServiceName(), " area ", sla.ServiceArea())
 	this.inventoryCenter = newInventoryCenter(sla, vnic)
 	if len(sla.Args()) == 1 {
@@ -37,15 +29,11 @@ func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.
 		this.nic.RegisterServiceLink(this.link)
 		vnic.Resources().Logger().Info("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
 	}
-	this.serviceName = sla.ServiceName()
-	this.serviceArea = sla.ServiceArea()
-	this.itemSample = sla.ServiceItem()
-	this.itemSampleList = sla.ServiceItemList().(proto.Message)
 	vnic.Resources().Registry().Register(&l8api.L8Query{})
 
-	c := this.inventoryCenter.elements.(*dcache.DCache).Cache()
+	//c := this.inventoryCenter.elements.(*dcache.DCache).Cache()
 
-	recovery.RecoveryCheck(this.serviceName, this.serviceArea, c, vnic)
+	//recovery.RecoveryCheck(this.serviceName, this.serviceArea, c, vnic)
 
 	return nil
 }
@@ -60,7 +48,7 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 	if !elements.Notification() && this.link != nil {
 		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.POST, elements)
 	}
-	return object.New(nil, this.itemSampleList)
+	return object.New(nil, this.sla.ServiceItemList())
 }
 
 func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
@@ -68,7 +56,7 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 	if !elements.Notification() && this.link != nil {
 		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PUT, elements)
 	}
-	return object.New(nil, this.itemSampleList)
+	return object.New(nil, this.sla.ServiceItemList())
 }
 
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
@@ -76,7 +64,7 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 	if !elements.Notification() && this.link != nil {
 		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PATCH, elements)
 	}
-	return object.New(nil, this.itemSampleList)
+	return object.New(nil, this.sla.ServiceItemList())
 }
 
 func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
@@ -84,7 +72,7 @@ func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs
 	if !elements.Notification() && this.link != nil {
 		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.DELETE, elements)
 	}
-	return object.New(nil, this.itemSampleList)
+	return object.New(nil, this.sla.ServiceItemList())
 }
 
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
@@ -128,9 +116,9 @@ func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResou
 }
 
 func (this *InventoryService) WebService() ifs.IWebService {
-	ws := web.New(this.serviceName, this.serviceArea, nil,
+	ws := web.New(this.sla.ServiceName(), this.sla.ServiceArea(), nil,
 		nil, nil, nil, nil, nil, nil, nil,
-		&l8api.L8Query{}, this.itemSampleList)
+		&l8api.L8Query{}, this.sla.ServiceItemList().(proto.Message))
 	return ws
 }
 
@@ -152,7 +140,7 @@ func (this *InventoryService) isSingleElement(pb ifs.IElements, vnic ifs.IVNic) 
 	ins, ok := pb.Element().(proto.Message)
 	if ok {
 		aside := reflect.ValueOf(ins).Elem().Type().Name()
-		bside := reflect.ValueOf(this.itemSample).Elem().Type().Name()
+		bside := reflect.ValueOf(this.sla.ServiceItem()).Elem().Type().Name()
 		if aside == bside {
 			rnode, ok1 := vnic.Resources().Introspector().NodeByTypeName(bside)
 			if ok1 {

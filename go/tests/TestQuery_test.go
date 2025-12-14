@@ -18,6 +18,7 @@ func TestQuery(t *testing.T) {
 		t.Fail()
 		return
 	}
-	jsn, _ := protojson.Marshal(elem.PQuery())
+	elem2 := elem.(*object.Elements)
+	jsn, _ := protojson.Marshal(elem2.PQuery())
 	fmt.Println(string(jsn))
 }
