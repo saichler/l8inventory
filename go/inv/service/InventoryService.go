@@ -3,6 +3,7 @@ package inventory
 import (
 	"reflect"
 
+	"github.com/saichler/l8pollaris/go/pollaris/targets"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
@@ -17,6 +18,15 @@ type InventoryService struct {
 	link            *l8services.L8ServiceLink
 	nic             ifs.IVNic
 	sla             *ifs.ServiceLevelAgreement
+}
+
+func Activate(linksId string, serviceItem, serviceItemList interface{}, vnic ifs.IVNic, primaryKeys ...string) {
+	svName, svArea := targets.Links.Cache(linksId)
+	sla := ifs.NewServiceLevelAgreement(&InventoryService{}, svName, svArea, true, nil)
+	sla.SetServiceItem(serviceItem)
+	sla.SetServiceItemList(serviceItemList)
+	sla.SetPrimaryKeys(primaryKeys...)
+	vnic.Resources().Services().Activate(sla, vnic)
 }
 
 func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) error {
