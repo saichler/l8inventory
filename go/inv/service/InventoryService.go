@@ -126,9 +126,8 @@ func (this *InventoryService) KeyOf(elements ifs.IElements, resources ifs.IResou
 }
 
 func (this *InventoryService) WebService() ifs.IWebService {
-	ws := web.New(this.sla.ServiceName(), this.sla.ServiceArea(), nil,
-		nil, nil, nil, nil, nil, nil, nil,
-		&l8api.L8Query{}, this.sla.ServiceItemList().(proto.Message))
+	ws := web.New(this.sla.ServiceName(), this.sla.ServiceArea(), 0)
+	ws.AddEndpoint(&l8api.L8Query{}, ifs.GET, this.sla.ServiceItemList().(proto.Message))
 	return ws
 }
 
