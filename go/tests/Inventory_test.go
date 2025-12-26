@@ -1,3 +1,19 @@
+// © 2025 Sharon Aicler (saichler@gmail.com)
+//
+// Layer 8 Ecosystem is licensed under the Apache License, Version 2.0.
+// You may obtain a copy of the License at:
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Package tests provides unit tests for the l8inventory distributed cache service.
+// It tests the core functionality including service activation, CRUD operations,
+// service linking, and query execution.
 package tests
 
 import (
@@ -14,12 +30,24 @@ import (
 	"github.com/saichler/l8types/go/testtypes"
 )
 
+// TestMain is the test entry point that sets up the test topology before running
+// tests and tears it down afterward. It uses the Layer 8 test infrastructure to
+// create a distributed environment for integration testing.
 func TestMain(m *testing.M) {
 	setup()
 	m.Run()
 	tear()
 }
 
+// TestInventory is the main integration test for the inventory service. It tests:
+//   - Service activation with forwarding configuration
+//   - POST operation and verification that it forwards to the mock ORM service
+//   - PATCH operation and verification of forwarding
+//   - Element retrieval by primary key
+//   - Query execution with SQL-like syntax
+//
+// The test uses a mock ORM service to verify that operations are correctly
+// forwarded to downstream services when service linking is configured.
 func TestInventory(t *testing.T) {
 	forwardInfo := &l8services.L8ServiceLink{}
 	forwardInfo.ZsideServiceName = "MockOrm"
