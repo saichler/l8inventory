@@ -78,13 +78,13 @@ func Activate(linksId string, serviceItem, serviceItemList interface{}, vnic ifs
 // Returns nil on success, or an error if initialization fails.
 func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) error {
 	this.sla = sla
-	vnic.Resources().Logger().Info("Activated Inventory on ", sla.ServiceName(), " area ", sla.ServiceArea())
+	vnic.Resources().Logger().Debug("Activated Inventory on ", sla.ServiceName(), " area ", sla.ServiceArea())
 	this.inventoryCenter = newInventoryCenter(sla, vnic)
 	if len(sla.Args()) == 1 {
 		this.link = sla.Args()[0].(*l8services.L8ServiceLink)
 		this.nic = vnic
 		this.nic.RegisterServiceLink(this.link)
-		vnic.Resources().Logger().Info("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+		vnic.Resources().Logger().Debug("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
 	}
 	vnic.Resources().Registry().Register(&l8api.L8Query{})
 
@@ -160,7 +160,7 @@ func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs
 //
 // Returns the matching elements or an error container if the query fails.
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	vnic.Resources().Logger().Info("Get Executed...")
+	vnic.Resources().Logger().Debug("Get Executed...")
 
 	result, ok := this.isSingleElement(pb, vnic)
 	if ok {
@@ -172,7 +172,7 @@ func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElement
 		return object.NewError(err.Error())
 	}
 	elems, stats := this.inventoryCenter.Get(query)
-	vnic.Resources().Logger().Info("Get Completed with ", len(elems), " elements for query:")
+	vnic.Resources().Logger().Debug("Get Completed with ", len(elems), " elements for query:")
 	return object.NewQueryResult(elems, stats)
 }
 
