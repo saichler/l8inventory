@@ -18,16 +18,16 @@ package tests
 
 import (
 	"fmt"
+	"github.com/saichler/l8pollaris/go/pollaris/targets"
 	"testing"
 	"time"
 
 	inventory "github.com/saichler/l8inventory/go/inv/service"
 	"github.com/saichler/l8inventory/go/tests/utils_inventory"
-	"github.com/saichler/l8types/go/types/l8services"
-
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/testtypes"
+	"github.com/saichler/probler/go/prob/common"
 )
 
 // TestMain is the test entry point that sets up the test topology before running
@@ -49,9 +49,6 @@ func TestMain(m *testing.M) {
 // The test uses a mock ORM service to verify that operations are correctly
 // forwarded to downstream services when service linking is configured.
 func TestInventory(t *testing.T) {
-	forwardInfo := &l8services.L8ServiceLink{}
-	forwardInfo.ZsideServiceName = "MockOrm"
-	forwardInfo.ZsideServiceArea = 0
 	serviceName := "inventory"
 	serviceArea := byte(0)
 	primaryKey := "MyString"
@@ -63,12 +60,12 @@ func TestInventory(t *testing.T) {
 	sla := ifs.NewServiceLevelAgreement(&inventory.InventoryService{}, serviceName, serviceArea, true, nil)
 	sla.SetServiceItem(elemType)
 	sla.SetServiceItemList(elemTypeList)
-	sla.SetArgs(forwardInfo)
+	sla.SetArgs(common.NetworkDevice_Links_ID)
 	sla.SetPrimaryKeys(primaryKey)
 	vnic.Resources().Services().Activate(sla, vnic)
 
-	sla = ifs.NewServiceLevelAgreement(&utils_inventory.MockOrmService{}, forwardInfo.ZsideServiceName,
-		byte(forwardInfo.ZsideServiceArea), false, nil)
+	pService, pArea := targets.Links.Persist(common.NetworkDevice_Links_ID)
+	sla = ifs.NewServiceLevelAgreement(&utils_inventory.MockOrmService{}, pService, pArea, false, nil)
 	vnic.Resources().Services().Activate(sla, vnic)
 
 	time.Sleep(time.Second)
@@ -78,7 +75,7 @@ func TestInventory(t *testing.T) {
 
 	time.Sleep(time.Second * 5)
 
-	m, ok := vnic.Resources().Services().ServiceHandler(forwardInfo.ZsideServiceName, byte(forwardInfo.ZsideServiceArea))
+	m, ok := vnic.Resources().Services().ServiceHandler(pService, pArea)
 	if !ok {
 		vnic.Resources().Logger().Fail(t, "Cannot find mock service")
 		return
