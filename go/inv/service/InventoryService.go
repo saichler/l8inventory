@@ -21,7 +21,7 @@ import (
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
 	"github.com/saichler/l8types/go/types/l8reflect"
-	"github.com/saichler/l8types/go/types/l8services"
+	"github.com/saichler/l8utils/go/utils/aggregator"
 	"github.com/saichler/l8utils/go/utils/web"
 	"google.golang.org/protobuf/proto"
 )
@@ -37,10 +37,10 @@ import (
 type InventoryService struct {
 	// inventoryCenter is the core inventory management engine
 	inventoryCenter *InventoryCenter
-	// link contains optional forwarding configuration to a downstream service
-	link *l8services.L8ServiceLink
 	// nic is the virtual network interface for this service
-	nic ifs.IVNic
+	nic     ifs.IVNic
+	agg     *aggregator.Aggregator
+	linksId string
 	// sla contains the service level agreement configuration
 	sla *ifs.ServiceLevelAgreement
 }
@@ -81,10 +81,9 @@ func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.
 	vnic.Resources().Logger().Debug("Activated Inventory on ", sla.ServiceName(), " area ", sla.ServiceArea())
 	this.inventoryCenter = newInventoryCenter(sla, vnic)
 	if len(sla.Args()) == 1 {
-		this.link = sla.Args()[0].(*l8services.L8ServiceLink)
+		this.linksId = sla.Args()[0].(string)
 		this.nic = vnic
-		this.nic.RegisterServiceLink(this.link)
-		vnic.Resources().Logger().Debug("Added forwarding to ", this.link.ZsideServiceName, " area ", this.link.ZsideServiceArea)
+		this.agg = aggregator.NewAggregator(vnic, 5, 30)
 	}
 	vnic.Resources().Registry().Register(&l8api.L8Query{})
 
@@ -107,8 +106,9 @@ func (this *InventoryService) DeActivate() error {
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Post(elements)
-	if !elements.Notification() && this.link != nil {
-		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.POST, elements)
+	if !elements.Notification() && this.agg != nil {
+		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.POST)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -120,8 +120,9 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Put(elements)
-	if !elements.Notification() && this.link != nil {
-		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PUT, elements)
+	if !elements.Notification() && this.agg != nil {
+		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PUT)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -133,8 +134,9 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Patch(elements)
-	if !elements.Notification() && this.link != nil {
-		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.PATCH, elements)
+	if !elements.Notification() && this.agg != nil {
+		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PATCH)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -146,8 +148,9 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Delete(elements)
-	if !elements.Notification() && this.link != nil {
-		vnic.Leader(this.link.ZsideServiceName, byte(this.link.ZsideServiceArea), ifs.DELETE, elements)
+	if !elements.Notification() && this.agg != nil {
+		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.DELETE)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
