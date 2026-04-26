@@ -14,6 +14,7 @@
 package inventory
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/saichler/l8pollaris/go/pollaris/targets"
@@ -61,6 +62,8 @@ type InventoryService struct {
 //	inventory.Activate("device-cache", &Device{}, &DeviceList{}, vnic, "Id")
 func Activate(linksId string, serviceItem, serviceItemList interface{}, vnic ifs.IVNic, primaryKeys ...string) {
 	svName, svArea := targets.Links.Cache(linksId)
+	fmt.Printf("[INVENTORY-ACTIVATE] linksId=%s cache=(%s,%d) elem=%T\n",
+		linksId, svName, svArea, serviceItem)
 	sla := ifs.NewServiceLevelAgreement(&InventoryService{}, svName, svArea, true, nil)
 	sla.SetServiceItem(serviceItem)
 	sla.SetServiceItemList(serviceItemList)
@@ -105,6 +108,8 @@ func (this *InventoryService) DeActivate() error {
 //
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	fmt.Printf("[INVENTORY-POST] cache=(%s,%d) elements=%d\n",
+		this.sla.ServiceName(), this.sla.ServiceArea(), len(elements.Elements()))
 	this.inventoryCenter.Post(elements)
 	if !elements.Notification() && this.agg != nil {
 		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
@@ -133,6 +138,8 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 //
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	fmt.Printf("[INVENTORY-PATCH] cache=(%s,%d) elements=%d\n",
+		this.sla.ServiceName(), this.sla.ServiceArea(), len(elements.Elements()))
 	this.inventoryCenter.Patch(elements)
 	if !elements.Notification() && this.agg != nil {
 		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
@@ -163,18 +170,26 @@ func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs
 //
 // Returns the matching elements or an error container if the query fails.
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
+	fmt.Printf("[INVENTORY-GET] cache=(%s,%d) request=received\n",
+		this.sla.ServiceName(), this.sla.ServiceArea())
 	vnic.Resources().Logger().Debug("Get Executed...")
 
 	result, ok := this.isSingleElement(pb, vnic)
 	if ok {
+		fmt.Printf("[INVENTORY-GET-DONE] cache=(%s,%d) mode=single\n",
+			this.sla.ServiceName(), this.sla.ServiceArea())
 		return result
 	}
 
 	query, err := pb.Query(vnic.Resources())
 	if err != nil {
+		fmt.Printf("[INVENTORY-GET-ERR] cache=(%s,%d) err=%s\n",
+			this.sla.ServiceName(), this.sla.ServiceArea(), err.Error())
 		return object.NewError(err.Error())
 	}
 	elems, stats := this.inventoryCenter.Get(query)
+	fmt.Printf("[INVENTORY-GET-DONE] cache=(%s,%d) mode=query elements=%d\n",
+		this.sla.ServiceName(), this.sla.ServiceArea(), len(elems))
 	vnic.Resources().Logger().Debug("Get Completed with ", len(elems), " elements for query:")
 	return object.NewQueryResult(elems, stats)
 }
