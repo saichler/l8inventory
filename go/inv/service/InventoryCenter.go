@@ -31,6 +31,7 @@
 package inventory
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/saichler/l8services/go/services/dcache"
@@ -50,8 +51,10 @@ type InventoryCenter struct {
 	elements ifs.IDistributedCache
 	// elementType is the reflect.Type of the inventory item for creating new instances
 	elementType reflect.Type
-	// primaryKeyAttribute is the name of the field used as the primary key
-	primaryKeyAttribute string
+	// primaryKeyAttributes is the ordered list of field names that compose the
+	// primary key. Multiple fields are supported and all are passed to the
+	// introspector so the cache uses a composite key (e.g. ClusterName + Key).
+	primaryKeyAttributes []string
 	// resources provides access to Layer 8 system resources (logger, registry, etc.)
 	resources ifs.IResources
 	// serviceName is the registered name of this inventory service
@@ -74,9 +77,17 @@ func newInventoryCenter(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) *Invento
 	this.element = sla.ServiceItem()
 	this.elementType = reflect.ValueOf(this.element).Elem().Type()
 	this.resources = vnic.Resources()
-	this.primaryKeyAttribute = sla.PrimaryKeys()[0]
+	// Preserve the FULL primary key slice. Using only PrimaryKeys()[0] caused
+	// all instances that shared the first field's value to collide in the
+	// cache (e.g. every K8s pod in cluster "Home" — primary key
+	// ("ClusterName","Key") — collapsed to a single entry because only
+	// ClusterName was registered as the key.)
+	this.primaryKeyAttributes = append([]string{}, sla.PrimaryKeys()...)
 
-	vnic.Resources().Introspector().Decorators().AddPrimaryKeyDecorator(this.element, this.primaryKeyAttribute)
+	fmt.Printf("[INVENTORY-PK] cache=(%s,%d) primaryKeys=%v\n",
+		this.serviceName, this.serviceArea, this.primaryKeyAttributes)
+
+	vnic.Resources().Introspector().Decorators().AddPrimaryKeyDecorator(this.element, this.primaryKeyAttributes...)
 
 	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, nil,
 		nil, this.resources)

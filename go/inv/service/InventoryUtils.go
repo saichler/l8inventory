@@ -24,7 +24,9 @@ import (
 // is available, or for creating placeholder entries.
 //
 // The method uses reflection to create a new instance of the element type, sets the
-// primary key field to the provided key value, and posts it to the cache.
+// FIRST primary key field to the provided key value, and posts it to the cache.
+// For composite primary keys, only the first field is populated — callers that need
+// to seed multiple key fields should construct the element themselves.
 //
 // Parameters:
 //   - key: The primary key value to set on the new element
@@ -33,8 +35,11 @@ import (
 //
 //	inventoryCenter.AddEmpty("device-12345")
 func (this *InventoryCenter) AddEmpty(key string) {
+	if len(this.primaryKeyAttributes) == 0 {
+		return
+	}
 	elem := reflect.New(this.elementType)
-	field := elem.Elem().FieldByName(this.primaryKeyAttribute)
+	field := elem.Elem().FieldByName(this.primaryKeyAttributes[0])
 	field.Set(reflect.ValueOf(key))
 	element := object.New(nil, elem.Interface())
 	this.Post(element)
