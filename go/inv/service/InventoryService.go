@@ -101,9 +101,7 @@ func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.
 // notifyWs multicasts an L8NotificationSet to the WebSocket notification service
 // for each element, so connected clients receive real-time change notifications.
 func (this *InventoryService) notifyWs(elements ifs.IElements, action ifs.Action, vnic ifs.IVNic) {
-	fmt.Printf("[WS-DEBUG-1] notifyWs called: action=%v vnic=%v\n", action, vnic != nil)
 	if vnic == nil {
-		fmt.Println("[WS-DEBUG-1] vnic is nil, returning")
 		return
 	}
 	modelType := reflect.ValueOf(this.sla.ServiceItem()).Elem().Type().Name()
@@ -111,7 +109,6 @@ func (this *InventoryService) notifyWs(elements ifs.IElements, action ifs.Action
 	if len(this.sla.PrimaryKeys()) > 0 {
 		pkField = this.sla.PrimaryKeys()[0]
 	}
-	fmt.Printf("[WS-DEBUG-1] modelType=%s pkField=%s elemCount=%d\n", modelType, pkField, len(elements.Elements()))
 
 	var nType l8notify.L8NotificationType
 	switch action {
@@ -124,7 +121,6 @@ func (this *InventoryService) notifyWs(elements ifs.IElements, action ifs.Action
 	case ifs.DELETE:
 		nType = l8notify.L8NotificationType_Delete
 	default:
-		fmt.Printf("[WS-DEBUG-1] unknown action %v, returning\n", action)
 		return
 	}
 
@@ -151,9 +147,7 @@ func (this *InventoryService) notifyWs(elements ifs.IElements, action ifs.Action
 			Type:        nType,
 			Time:        time.Now().UnixMilli(),
 		}
-		fmt.Printf("[WS-DEBUG-1] Multicasting to %s/%d: model=%s key=%s type=%v\n", WsServiceName, WsServiceArea, modelType, pkValue, nType)
 		vnic.Multicast(WsServiceName, WsServiceArea, action, n)
-		fmt.Println("[WS-DEBUG-1] Multicast returned")
 	}
 }
 
@@ -172,7 +166,6 @@ func (this *InventoryService) DeActivate() error {
 //
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	fmt.Printf("[WS-DEBUG-0] InventoryService.Post called: notification=%v elemCount=%d svc=%s\n", elements.Notification(), len(elements.Elements()), this.sla.ServiceName())
 	this.inventoryCenter.Post(elements)
 	if !elements.Notification() {
 		if this.agg != nil {
@@ -180,8 +173,6 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 			this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.POST)
 		}
 		this.notifyWs(elements, ifs.POST, vnic)
-	} else {
-		fmt.Println("[WS-DEBUG-0] Skipping notifyWs because elements.Notification() is true")
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -209,7 +200,6 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 //
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	fmt.Printf("[WS-DEBUG-0] InventoryService.Patch called: notification=%v elemCount=%d svc=%s\n", elements.Notification(), len(elements.Elements()), this.sla.ServiceName())
 	this.inventoryCenter.Patch(elements)
 	if !elements.Notification() {
 		if this.agg != nil {
@@ -217,8 +207,6 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 			this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PATCH)
 		}
 		this.notifyWs(elements, ifs.PATCH, vnic)
-	} else {
-		fmt.Println("[WS-DEBUG-0] Skipping notifyWs because elements.Notification() is true")
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
