@@ -16,15 +16,22 @@ package inventory
 import (
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/saichler/l8pollaris/go/pollaris/targets"
 	"github.com/saichler/l8srlz/go/serialize/object"
 	"github.com/saichler/l8types/go/ifs"
 	"github.com/saichler/l8types/go/types/l8api"
+	"github.com/saichler/l8types/go/types/l8notify"
 	"github.com/saichler/l8types/go/types/l8reflect"
 	"github.com/saichler/l8utils/go/utils/aggregator"
 	"github.com/saichler/l8utils/go/utils/web"
 	"google.golang.org/protobuf/proto"
+)
+
+const (
+	WsServiceName = "websock"
+	WsServiceArea = byte(0)
 )
 
 // InventoryService is the Layer 8 service handler that implements the standard
@@ -62,8 +69,6 @@ type InventoryService struct {
 //	inventory.Activate("device-cache", &Device{}, &DeviceList{}, vnic, "Id")
 func Activate(linksId string, serviceItem, serviceItemList interface{}, vnic ifs.IVNic, primaryKeys ...string) {
 	svName, svArea := targets.Links.Cache(linksId)
-	fmt.Printf("[INVENTORY-ACTIVATE] linksId=%s cache=(%s,%d) elem=%T\n",
-		linksId, svName, svArea, serviceItem)
 	sla := ifs.NewServiceLevelAgreement(&InventoryService{}, svName, svArea, true, nil)
 	sla.SetServiceItem(serviceItem)
 	sla.SetServiceItemList(serviceItemList)
@@ -93,6 +98,59 @@ func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.
 	return nil
 }
 
+// notifyWs multicasts an L8NotificationSet to the WebSocket notification service
+// for each element, so connected clients receive real-time change notifications.
+func (this *InventoryService) notifyWs(elements ifs.IElements, action ifs.Action, vnic ifs.IVNic) {
+	if vnic == nil {
+		return
+	}
+	modelType := reflect.ValueOf(this.sla.ServiceItem()).Elem().Type().Name()
+	pkField := ""
+	if len(this.sla.PrimaryKeys()) > 0 {
+		pkField = this.sla.PrimaryKeys()[0]
+	}
+
+	var nType l8notify.L8NotificationType
+	switch action {
+	case ifs.POST:
+		nType = l8notify.L8NotificationType_Post
+	case ifs.PUT:
+		nType = l8notify.L8NotificationType_Put
+	case ifs.PATCH:
+		nType = l8notify.L8NotificationType_Patch
+	case ifs.DELETE:
+		nType = l8notify.L8NotificationType_Delete
+	default:
+		return
+	}
+
+	for _, elem := range elements.Elements() {
+		if elem == nil {
+			continue
+		}
+		pkValue := ""
+		if pkField != "" {
+			v := reflect.ValueOf(elem)
+			if v.Kind() == reflect.Ptr {
+				v = v.Elem()
+			}
+			f := v.FieldByName(pkField)
+			if f.IsValid() {
+				pkValue = fmt.Sprint(f.Interface())
+			}
+		}
+		n := &l8notify.L8NotificationSet{
+			ServiceName: this.sla.ServiceName(),
+			ServiceArea: int32(this.sla.ServiceArea()),
+			ModelType:   modelType,
+			ModelKey:    pkValue,
+			Type:        nType,
+			Time:        time.Now().UnixMilli(),
+		}
+		vnic.Multicast(WsServiceName, WsServiceArea, action, n)
+	}
+}
+
 // DeActivate cleans up resources when the service is deactivated. This method is
 // called by the Layer 8 service framework when the service is being shut down.
 //
@@ -108,12 +166,13 @@ func (this *InventoryService) DeActivate() error {
 //
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	fmt.Printf("[INVENTORY-POST] cache=(%s,%d) elements=%d\n",
-		this.sla.ServiceName(), this.sla.ServiceArea(), len(elements.Elements()))
 	this.inventoryCenter.Post(elements)
-	if !elements.Notification() && this.agg != nil {
-		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
-		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.POST)
+	if !elements.Notification() {
+		if this.agg != nil {
+			pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+			this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.POST)
+		}
+		this.notifyWs(elements, ifs.POST, vnic)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -125,9 +184,12 @@ func (this *InventoryService) Post(elements ifs.IElements, vnic ifs.IVNic) ifs.I
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Put(elements)
-	if !elements.Notification() && this.agg != nil {
-		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
-		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PUT)
+	if !elements.Notification() {
+		if this.agg != nil {
+			pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+			this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PUT)
+		}
+		this.notifyWs(elements, ifs.PUT, vnic)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -138,12 +200,13 @@ func (this *InventoryService) Put(elements ifs.IElements, vnic ifs.IVNic) ifs.IE
 //
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	fmt.Printf("[INVENTORY-PATCH] cache=(%s,%d) elements=%d\n",
-		this.sla.ServiceName(), this.sla.ServiceArea(), len(elements.Elements()))
 	this.inventoryCenter.Patch(elements)
-	if !elements.Notification() && this.agg != nil {
-		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
-		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PATCH)
+	if !elements.Notification() {
+		if this.agg != nil {
+			pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+			this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.PATCH)
+		}
+		this.notifyWs(elements, ifs.PATCH, vnic)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -155,9 +218,12 @@ func (this *InventoryService) Patch(elements ifs.IElements, vnic ifs.IVNic) ifs.
 // Returns an empty elements container of the service item list type.
 func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs.IElements {
 	this.inventoryCenter.Delete(elements)
-	if !elements.Notification() && this.agg != nil {
-		pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
-		this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.DELETE)
+	if !elements.Notification() {
+		if this.agg != nil {
+			pServiceName, pServiceArea := targets.Links.Persist(this.linksId)
+			this.agg.AddElement(elements.Elements(), ifs.Leader, "", pServiceName, pServiceArea, ifs.DELETE)
+		}
+		this.notifyWs(elements, ifs.DELETE, vnic)
 	}
 	return object.New(nil, this.sla.ServiceItemList())
 }
@@ -170,26 +236,18 @@ func (this *InventoryService) Delete(elements ifs.IElements, vnic ifs.IVNic) ifs
 //
 // Returns the matching elements or an error container if the query fails.
 func (this *InventoryService) Get(pb ifs.IElements, vnic ifs.IVNic) ifs.IElements {
-	fmt.Printf("[INVENTORY-GET] cache=(%s,%d) request=received\n",
-		this.sla.ServiceName(), this.sla.ServiceArea())
 	vnic.Resources().Logger().Debug("Get Executed...")
 
 	result, ok := this.isSingleElement(pb, vnic)
 	if ok {
-		fmt.Printf("[INVENTORY-GET-DONE] cache=(%s,%d) mode=single\n",
-			this.sla.ServiceName(), this.sla.ServiceArea())
 		return result
 	}
 
 	query, err := pb.Query(vnic.Resources())
 	if err != nil {
-		fmt.Printf("[INVENTORY-GET-ERR] cache=(%s,%d) err=%s\n",
-			this.sla.ServiceName(), this.sla.ServiceArea(), err.Error())
 		return object.NewError(err.Error())
 	}
 	elems, stats := this.inventoryCenter.Get(query)
-	fmt.Printf("[INVENTORY-GET-DONE] cache=(%s,%d) mode=query elements=%d\n",
-		this.sla.ServiceName(), this.sla.ServiceArea(), len(elems))
 	vnic.Resources().Logger().Debug("Get Completed with ", len(elems), " elements for query:")
 	return object.NewQueryResult(elems, stats)
 }
