@@ -89,7 +89,7 @@ func newInventoryCenter(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) *Invento
 
 	vnic.Resources().Introspector().Decorators().AddPrimaryKeyDecorator(this.element, this.primaryKeyAttributes...)
 
-	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, nil,
+	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, sla.InitItems(),
 		nil, this.resources)
 
 	return this
