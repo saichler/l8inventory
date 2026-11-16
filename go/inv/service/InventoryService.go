@@ -91,7 +91,7 @@ func (this *InventoryService) Activate(sla *ifs.ServiceLevelAgreement, vnic ifs.
 	if len(sla.Args()) == 1 {
 		this.linksId = sla.Args()[0].(string)
 		this.nic = vnic
-		this.agg = aggregator.NewAggregator(vnic, 5, 30)
+		this.agg = aggregator.NewAggregator(vnic, 5, 0, 30)
 	}
 	vnic.Resources().Registry().Register(&l8api.L8Query{})
 
