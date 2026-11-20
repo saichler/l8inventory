@@ -91,6 +91,11 @@ func newInventoryCenter(sla *ifs.ServiceLevelAgreement, vnic ifs.IVNic) *Invento
 
 	this.elements = dcache.NewDistributedCache(this.serviceName, this.serviceArea, this.element, sla.InitItems(),
 		nil, this.resources)
+	// Live client notifications come from the cache itself: each one carries
+	// the record and targets only the subscribers whose displayed page the
+	// write belongs to. The listener stays nil (no cross-node delta queue)
+	// (probler/plans/websocket-page-scoped-notifications.md Phase 3).
+	this.elements.(*dcache.DCache).SetWebSocketNotifier(vnic)
 
 	return this
 }
